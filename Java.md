@@ -1,5 +1,5 @@
 
-# 1. Java Fundamentals
+## Java Fundamentals
 * Java platform overview
 * JVM, JRE, JDK differences
 * Java compilation process
@@ -21,7 +21,7 @@
 * Java keywords
 
 
-# 2. Object-Oriented Programming
+## Object-Oriented Programming
 * OOP principles
 * Encapsulation
 * Inheritance
@@ -40,92 +40,46 @@
 * Object equality (equals/hashCode)
 * toString contract
 
-# 3. Java Classes & Core APIs
+## Java Classes & Core APIs
 * Object class methods
 * String vs StringBuilder vs StringBuffer
 * Math API
 * Date and time API
 * Optional class
 * UUID
-
 * Enums
-
 * Records
-
 * Annotations
-
 * Packages
-
 * Class loading basics
 
-
-
-
-
-
-
-# 4. Collections Framework
-
-
-
+## Collections Framework
 * Collection hierarchy
-
 * List interface
-
 * Set interface
-
 * Map interface
-
 * Queue interface
-
 * ArrayList internals
-
 * LinkedList internals
-
 * HashMap internals
-
 * HashSet internals
-
 * TreeMap and TreeSet
-
 * Comparable vs Comparator
-
 * Sorting mechanisms
-
 * Iterators
-
 * Fail-fast vs fail-safe
-
 * Concurrent collections
-
 * Immutable collections
-
 * Collection performance tradeoffs
 
-
-
-
-
-
-
-# 5. Exception Handling
-
-
-
+## Exception Handling
 * Exception hierarchy
-
 * Checked vs unchecked exceptions
-
 * try-catch-finally
-
 * throw vs throws
-
 * Custom exceptions
-
 * Exception propagation
-
 * Best practices
-
 
 
 
