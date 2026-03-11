@@ -654,9 +654,7 @@
 
 
 
-Performance & Optimization
-
-
+# Performance & Optimization
 
 * JVM performance fundamentals
 
@@ -1272,25 +1270,17 @@ Got it — **topics only**, comprehensive structured list by domain.
 
 
 
-If you want next, I can generate:
 
 
 
-? Java architect interview questions
 
-? JVM deep dive guide
 
-? Java performance tuning playbook
 
-? System design scenarios in Java
 
-? Advanced concurrency guide
 
-? Enterprise Java architecture prep
 
 
 
-Just tell me what to expand.
 
 
 
@@ -1435,32 +1425,19 @@ Just tell me what to expand.
 
 
 
+# Java Language & Core Concepts
+* Java fundamentals
+* OOP principles
+* Java type system
+* Generics
+* Collections framework
+* Exception handling
+* Functional programming (lambdas, streams)
+* Records
+* Sealed classes
+* Pattern matching
 
-
-
-
-
-
-
-
-
-
-
-
-
-✅ Java Architect Interview Topics — ONLY LIST
-1️⃣ Java Language & Core Concepts
-Java fundamentals
-OOP principles
-Java type system
-Generics
-Collections framework
-Exception handling
-Functional programming (lambdas, streams)
-Records
-Sealed classes
-Pattern matching
-2️⃣ JVM Internals
+#  JVM Internals
 JVM architecture
 Class loading mechanism
 Bytecode execution
@@ -1471,7 +1448,8 @@ GC tuning strategies
 Java memory model
 Escape analysis
 Java Flight Recorder
-3️⃣ Concurrency & Multithreading
+
+# Concurrency & Multithreading
 Thread lifecycle
 Executor framework
 Thread pools design
@@ -1485,32 +1463,34 @@ Virtual threads
 Structured concurrency
 Deadlock detection
 Race condition prevention
-4️⃣ Performance Engineering
-JVM performance tuning
-Profiling tools
-Memory leak detection
-GC log analysis
-CPU optimization
-Object allocation strategies
-Caching strategies
-Connection pooling
-Serialization optimization
-5️⃣ Java Design Patterns
-Singleton
-Factory
-Abstract factory
-Builder
-Prototype
-Adapter
-Facade
-Proxy
-Decorator
-Composite
-Strategy
-Observer
-Command
-Template method
-State pattern
+
+# Performance Engineering
+- JVM performance tuning
+- Profiling tools
+- Memory leak detection
+- GC log analysis
+- CPU optimization
+- Object allocation strategies
+- Caching strategies
+- Connection pooling
+- Serialization optimization
+
+# Java Design Patterns
+- Singleton
+- Factory
+- Abstract factory
+- Builder
+- Prototype
+- Adapter
+- Facade
+- Proxy
+- Decorator
+- Composite
+- Strategy
+- Observer
+- Command
+- Template method
+- State pattern
 6️⃣ Enterprise Application Architecture
 Layered architecture
 Hexagonal architecture
@@ -1619,7 +1599,7 @@ Technical debt management
 API lifecycle management
 Compliance readiness
 Audit logging
-1️⃣9️⃣ Modern Java Features
+# Modern Java Features
 Java modules
 Records
 Pattern matching
