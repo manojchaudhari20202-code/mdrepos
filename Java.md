@@ -81,241 +81,103 @@
 * Exception propagation
 * Best practices
 
-
-
-
-
-
-# 6. Java Generics
-
-
-
+## Java Generics
 * Generic classes
-
 * Generic methods
-
 * Type erasure
-
 * Bounded types
-
 * Wildcards
-
 * Covariance and contravariance
-
 * PECS principle
 
-
-
-
-
-
-
-# 7. Java I/O & NIO
-
-
-
+## Java I/O & NIO
 * File handling
-
 * Streams API (I/O streams)
-
 * Byte streams vs character streams
-
 * Buffered streams
-
 * Serialization
-
 * Externalization
-
 * NIO overview
-
 * Channels and buffers
-
 * File system APIs
-
 * Memory-mapped files
 
-
-
-
-
-
-
-# 8. Multithreading & Concurrency
-
-
-
+## Multithreading & Concurrency
 * Thread lifecycle
-
 * Runnable vs Callable
-
 * Thread creation
-
 * Synchronization
-
 * Intrinsic locks
-
 * Deadlocks
-
 * Race conditions
-
 * Volatile keyword
-
 * Thread safety
-
 * Executor framework
-
 * Thread pools
-
 * Future and CompletableFuture
-
 * Locks and ReentrantLock
-
 * ReadWriteLock
-
 * Concurrent collections
-
 * Atomic variables
-
 * Fork/Join framework
-
 * Parallel streams
-
 * Producer-consumer pattern
 
-
-
-
-
-
-
-# 9. Java Memory Model & JVM Internals
-
-
-
+## Java Memory Model & JVM Internals
 * JVM architecture
-
 * Heap vs stack
-
 * Method area
-
 * Metaspace
-
 * Class loaders
-
 * Garbage collection basics
-
 * GC algorithms
-
 * G1, ZGC, Shenandoah
-
 * Memory leaks
-
 * Object allocation
-
 * Escape analysis
-
 * JIT compilation
-
 * Bytecode execution
-
 * JVM tuning basics
 
 
-
-
-
-
-
-# 10. Functional Programming & Streams
-
-
-
+## Functional Programming & Streams
 * Lambda expressions
-
 * Functional interfaces
-
 * Method references
-
 * Stream API
-
 * Intermediate operations
-
 * Terminal operations
-
 * Collectors
-
 * Parallel streams
-
 * Stream performance
-
 * Optional usage
 
 
-
-
-
-
-
-# 11. Reflection & Class Loading
-
-
-
+## Reflection & Class Loading
 * Reflection API
-
 * Dynamic class loading
-
 * ClassLoader hierarchy
-
 * Annotations processing
-
 * Runtime introspection
-
 * Dynamic proxies
 
 
-
-
-
-
-
-# 12. Java Networking
-
-
-
+## Java Networking
 * Sockets
-
 * TCP vs UDP
-
 * HTTP basics
-
 * URL connections
-
 * REST clients
 
 
-
-
-
-
-
-# 13. Advanced Java Language Features
-
-
-
+## Advanced Java Language Features
 * Inner classes
-
 * Anonymous classes
-
 * Nested classes
-
 * Var keyword
-
 * Switch expressions
-
 * Pattern matching
-
 * Sealed classes
-
 * Modules (Java 9+)
 
 
@@ -324,796 +186,329 @@
 
 
 
-# 14. JDBC
-
-
-
+## JDBC
 * JDBC architecture
-
 * Drivers
-
 * Connections
-
 * Statements
-
 * Prepared statements
-
 * ResultSet handling
-
 * Transactions
-
 * Batch processing
-
 * Connection pooling
 
-
-
-
-
-
-
-# 15. Servlets & JSP
-
-
-
+## Servlets & JSP
 * Servlet lifecycle
-
 * Servlet container
-
 * Request/response handling
-
 * Session management
-
 * Filters
-
 * JSP basics
-
 * MVC architecture
-
 * JSTL
 
-
-
-
-
-
-
-# 16. Spring Ecosystem (Advanced Java)
-
-
-
+## Spring Ecosystem (Advanced Java)
 * Spring Core
-
 * Dependency injection
-
 * Bean lifecycle
-
 * Spring Boot
-
 * Auto-configuration
-
 * REST APIs with Spring
-
 * Spring MVC
-
 * Spring Data JPA
-
 * Hibernate basics
-
 * ORM concepts
-
 * Transactions
-
 * Spring Security
-
 * Microservices architecture
-
 * Spring Cloud
 
 
-
-
-
-
-
-# 17. Build Tools
-
-
-
+## Build Tools
 * Maven
-
 * Gradle
-
 * Dependency management
-
 * Build lifecycle
 
 
-
-
-
-
-
-# 18. Testing
-
-
-
+## Testing
 * JUnit
-
 * Mockito
-
 * Integration testing
-
 * Test-driven development
 
-
-
-
-
-
-
-# 19. Performance & Optimization
-
-
-
+## Performance & Optimization
 * Profiling Java apps
-
 * Memory tuning
-
 * GC tuning
-
 * Thread tuning
-
 * CPU optimization
-
 * I/O optimization
 
 
-
-
-
-
-
-# 20. Design Patterns
-
-
-
+## Design Patterns
 * Singleton
-
 * Factory
-
 * Builder
-
 * Observer
-
 * Strategy
-
 * Decorator
-
 * Adapter
-
 * Proxy
-
 * MVC
-
 * Dependency injection
 
-
-
-
-
-
-
-# 21. Security
-
-
-
+## Security
 * Java security model
-
 * Cryptography basics
-
 * SSL/TLS
-
 * Secure coding practices
-
 * Authentication & authorization
 
-
-
-
-
-
-
-# 22. Architecture & System Design
-
-
-
+## Architecture & System Design
 * Layered architecture
-
 * Microservices design
-
 * REST architecture
-
 * Event-driven architecture
-
 * Distributed systems basics
-
 * Scalability strategies
-
 * Caching strategies
-
 * Messaging systems
-
 * API design
 
-
-
-
-
-
-
-# 23. Real-World Scenarios
-
-
-
+## Real-World Scenarios
 * Handling high concurrency
-
 * Debugging memory leaks
-
 * Scaling Java applications
-
 * Performance bottlenecks
-
 * Thread contention
-
 * Distributed transactions
-
 * Production troubleshooting
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Performance & Optimization
-
+## Performance & Optimization
 * JVM performance fundamentals
-
 * Heap vs stack memory
-
 * Garbage collection algorithms
-
 * G1, ZGC, Shenandoah
-
 * GC tuning strategies
-
 * JIT compilation
-
 * Escape analysis
-
 * Allocation optimization
-
 * Thread performance
-
 * Lock contention
-
 * CPU profiling
-
 * Memory profiling
-
 * Throughput vs latency tuning
-
 * Performance benchmarking
-
 * Load testing
-
 * Thread pool tuning
-
 * I/O optimization
-
 * Cache optimization
-
 * Object pooling tradeoffs
-
 * False sharing
-
 * NUMA awareness
-
 * Profiling Java apps
-
 * Memory tuning
-
 * GC tuning
-
 * Thread tuning
-
 * CPU optimization
-
 * I/O optimization
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Got it — **topics only**, comprehensive structured list by domain.
-
-
-
-
-
-
-
-# 1. Java Fundamentals
-
-
-
+## Java Fundamentals
 * Java platform overview
-
 * JVM, JRE, JDK differences
-
 * Java compilation pipeline
-
 * Bytecode fundamentals
-
 * Java syntax and semantics
-
 * Primitive data types
-
 * Reference types
-
 * Variables and scope
-
 * Memory model basics
-
 * Control flow statements
-
 * Arrays and strings
-
 * String pool
-
 * Immutability
-
 * Wrapper classes
-
 * Autoboxing/unboxing
-
 * Pass-by-value semantics
-
 * Object lifecycle
-
 * Access modifiers
-
 * Packages and modules
-
 * Core libraries overview
 
 
-
-
-
-
-
-# 2. Advanced Java
-
-
-
+## Advanced Java
 * Object-oriented design principles
-
 * SOLID principles
-
 * Generics and type erasure
-
 * Reflection API
-
 * Annotations
-
 * Class loaders
-
 * Dynamic proxies
-
 * Lambda expressions
-
 * Functional interfaces
-
 * Stream API
-
 * Optional usage
-
 * Records
-
 * Sealed classes
-
 * Pattern matching
-
 * Modules system
-
 * NIO and asynchronous I/O
-
 * Serialization mechanisms
-
 * Custom class loading
-
 * JNI basics
 
 
-
-
-
-
-
-# 3. Java Performance
-
-
-
+## Java Performance
 * JVM performance fundamentals
-
 * Heap vs stack memory
-
 * Garbage collection algorithms
-
 * G1, ZGC, Shenandoah
-
 * GC tuning strategies
-
 * JIT compilation
-
 * Escape analysis
-
 * Allocation optimization
-
 * Thread performance
-
 * Lock contention
-
 * CPU profiling
-
 * Memory profiling
-
 * Throughput vs latency tuning
-
 * Performance benchmarking
-
 * Load testing
-
 * Thread pool tuning
-
 * I/O optimization
-
 * Cache optimization
-
 * Object pooling tradeoffs
-
 * False sharing
-
 * NUMA awareness
 
 
-
-
-
-
-
-# 4. Java Instrumentation
-
-
-
+## Java Instrumentation
 * Java agent architecture
-
 * Bytecode instrumentation
-
 * java.lang.instrument API
-
 * JVMTI basics
-
 * Runtime instrumentation
-
 * Build-time instrumentation
-
 * AOP instrumentation
-
 * Bytecode manipulation libraries
-
 * ASM basics
-
 * Javassist
-
 * Byte Buddy
-
 * Class transformation
-
 * Method interception
-
 * Profiling agents
-
 * Monitoring agents
 
 
-
-
-
-
-
-# 5. Java Observability
-
-
-
+## Java Observability
 * Observability principles
-
 * Logging architecture
-
 * Metrics collection
-
 * Distributed tracing
-
 * Structured logging
-
 * Log aggregation
-
 * SLF4J ecosystem
-
 * Log4j / Logback
-
 * Micrometer metrics
-
 * OpenTelemetry integration
-
 * JVM metrics
-
 * Application health monitoring
-
 * Alerting strategies
-
 * Production debugging
-
 * Thread dumps analysis
-
 * Heap dumps analysis
-
 * JFR (Java Flight Recorder)
-
 * JMC (Mission Control)
 
 
-
-
-
-
-
-# 6. Java Architectures
-
-
-
+## Java Architectures
 * Monolithic architecture
-
 * Layered architecture
-
 * Hexagonal architecture
-
 * Clean architecture
-
 * Microservices architecture
-
 * Event-driven architecture
-
 * Reactive architecture
-
 * Serverless Java architecture
-
 * Domain-driven design
-
 * CQRS architecture
-
 * Saga patterns
-
 * API-first architecture
-
 * Cloud-native Java design
-
 * Distributed system design
-
 * High-availability architecture
-
 * Resilience architecture
-
 * Scalability patterns
-
 * Data consistency models
-
 * Caching architecture
 
 
-
-
-
-
-
-# 7. Java Design Patterns
-
-
-
+## Java Design Patterns
 * Creational patterns
-
 * Singleton
-
 * Factory
-
 * Builder
-
 * Prototype
-
 * Structural patterns
-
 * Adapter
-
 * Decorator
-
 * Proxy
-
 * Composite
-
 * Behavioral patterns
-
 * Observer
-
 * Strategy
-
 * Command
-
 * Chain of responsibility
-
 * Template method
-
 * State pattern
-
 * Dependency injection
-
 * MVC pattern
-
 * Repository pattern
 
 
-
-
-
-
-
-# 8. Java Anti-Patterns
-
-
-
+## Java Anti-Patterns
 * God object
-
 * Spaghetti code
-
 * Overengineering
-
 * Premature optimization
-
 * Memory leaks
-
 * Thread misuse
-
 * Improper synchronization
-
 * Overuse of inheritance
-
 * Tight coupling
-
 * Static abuse
-
 * Exception swallowing
-
 * Resource leaks
-
 * Blocking calls in async flows
-
 * Improper caching
-
 * Monolithic services
-
 * Shared mutable state
-
 * Overloaded constructors
-
 * Circular dependencies
 
 
-
-
-
-
-
-# 9. Java Best Practices
-
-
-
+## Java Best Practices
 * Clean code principles
-
 * Defensive programming
-
 * Immutability design
-
 * Exception handling best practices
-
 * Logging best practices
-
 * Concurrency best practices
-
 * Resource management
-
 * Dependency management
-
 * Secure coding practices
-
 * API design guidelines
-
 * Testing strategies
-
 * Code review practices
-
 * Documentation standards
-
 * Modular design
-
 * Performance best practices
-
 * Memory safety
-
 * Scalability guidelines
-
 * CI/CD integration
 
 
@@ -1121,27 +516,15 @@ Got it — **topics only**, comprehensive structured list by domain.
 
 
 
-
-# 10. Java Technologies
-
-
-
+## Java Technologies
 * Spring ecosystem
-
 * Spring Boot
-
 * Spring MVC
-
 * Spring Security
-
 * Spring Data
-
 * Hibernate
-
 * JPA
-
 * Jakarta EE
-
 * Servlet API
 
 * REST frameworks
