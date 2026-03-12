@@ -1,3 +1,29 @@
+
+# INDEX
+- Service Design Patterns (11 items)
+- Service Interaction Patterns (8 items)
+- Service Governance Patterns (5 items)
+- MICROSERVICES Architectural Patterns (7 items)
+- MICROSERVICES Communication Patterns (4 items)
+- MICROSERVICES Data Patterns (5 items)
+- MICROSERVICES Resiliency Patterns (5 items)
+- Cloud Architecture Patterns (11 items)
+- Cloud Security Patterns (4 items)
+- Cloud Operational Patterns (3 items)
+- BigData Architecture Patterns (6 items)
+- BigData Processing Patterns (4 items)
+- BigData Governance Patterns (4 items)
+- DevOps Pipeline Patterns (4 items)
+- DevOps Infrastructure Patterns (4 items)
+- DevOps Release Patterns (3 items)
+- DevOps Observability Patterns (4 items)
+- SECURITY PATTERNS (Cross-Domain) (9 items)
+- GOVERNANCE & ENTERPRISE PATTERNS (7 items)
+- Arcitura Patterns (13 items)
+
+
+
+
 ## Service Design Patterns
 * Service Contract Design
 * Service Façade
