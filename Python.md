@@ -19,6 +19,7 @@
 * Loops and comprehensions
 * Pattern matching
 
+
 ## Functions & Functional Concepts
 * Function definitions
 * Default arguments
@@ -35,375 +36,163 @@
 * Currying
 
 
-
----
-
-
-
-# 3. Object-Oriented Programming
-
-
-
+## Object-Oriented Programming
 * Classes and objects
-
 * Instance vs class variables
-
 * Methods
-
 * Constructors
-
 * Inheritance
-
 * Multiple inheritance
-
 * Method resolution order (MRO)
-
 * Polymorphism
-
 * Encapsulation
-
 * Abstraction
-
 * Composition
-
 * Magic methods
-
 * Operator overloading
-
 * Dataclasses
-
 * Slots
-
 * Named tuples
 
 
-
----
-
-
-
-# 4. Python Data Structures & Collections
-
-
-
+## Python Data Structures & Collections
 * Built-in collections
-
 * collections module
-
 * defaultdict
-
 * Counter
-
 * deque
-
 * OrderedDict
-
 * Heap queues
-
 * Bisect module
-
 * Copying objects
-
 * Deep vs shallow copy
 
 
-
----
-
-
-
-# 5. Error Handling
-
-
-
+## Error Handling
 * Exceptions hierarchy
-
 * try/except/finally
-
 * Custom exceptions
-
 * Raising exceptions
-
 * Assertions
-
 * Exception chaining
 
 
-
----
-
-
-
-# 6. Modules & Packaging
-
-
-
+## Modules & Packaging
 * Modules and imports
-
 * Package structure
-
 * **init**.py
-
 * Virtual environments
-
 * pip and dependency management
-
 * Packaging standards
-
 * Python packaging tools
-
 * Versioning
-
 * Distribution
 
 
-
----
-
-
-
-# 7. File Handling & I/O
-
-
-
+## File Handling & I/O
 * File operations
-
 * Context managers
-
 * with statement
-
 * Reading/writing files
-
 * JSON handling
-
 * CSV handling
-
 * Pickling
-
 * Serialization
-
 * Compression formats
 
 
-
----
-
-
-
-# 8. Python Internals
-
-
-
+## Python Internals
 * Python object model
-
 * Reference counting
-
 * Garbage collection
-
 * Memory management
-
 * Python stack frames
-
 * Bytecode
-
 * CPython internals
-
 * GIL (Global Interpreter Lock)
-
 * Python memory model
-
 * Interning
-
 * Small object caching
 
 
-
----
-
-
-
-# 9. Iterators & Generators
-
-
-
+## Iterators & Generators
 * Iterator protocol
-
 * Iterable vs iterator
-
 * Generators
-
 * yield keyword
-
 * Generator expressions
-
 * Coroutines
-
 * Lazy evaluation
-
 * itertools module
 
 
-
----
-
-
-
-# 10. Advanced Language Features
-
-
-
+## Advanced Language Features
 * Metaclasses
-
 * Descriptors
-
 * Monkey patching
-
 * Introspection
-
 * Reflection
-
 * Dynamic typing internals
-
 * **slots**
-
 * Weak references
-
 * Abstract base classes
-
 * Protocols
-
 * Structural typing
 
 
-
----
-
-
-
-# 11. Concurrency & Parallelism
-
-
-
+## Concurrency & Parallelism
 * Threads in Python
-
 * Multiprocessing
-
 * Threading vs multiprocessing
-
 * Asyncio basics
-
 * Event loop
-
 * Async/await
-
 * Futures
-
 * Executors
-
 * Thread safety
-
 * Race conditions
-
 * Locks and synchronization
-
 * Concurrent programming patterns
-
 * GIL implications
-
 * CPU-bound vs IO-bound workloads
 
 
-
----
-
-
-
-# 12. Performance Optimization
-
-
-
+## Performance Optimization
 * Profiling Python code
-
 * Memory profiling
-
 * Time complexity
-
 * Optimization strategies
-
 * C extensions
-
 * Cython
-
 * Numba
-
 * Vectorization
-
 * Multiprocessing optimization
-
 * Async performance
-
 * Caching strategies
 
 
-
----
-
-
-
-# 13. Python Standard Library Deep Dive
-
-
-
+## Python Standard Library Deep Dive
 * os module
-
 * sys module
-
 * pathlib
-
 * subprocess
-
 * threading module
-
 * multiprocessing module
-
 * functools
-
 * itertools
-
 * collections
-
 * logging
-
 * argparse
 
 
-
----
-
-
-
-# 14. Testing
-
-
-
+## Testing
 * Unit testing
-
 * unittest framework
-
 * pytest
-
 * Mocking
-
 * Fixtures
-
 * Test coverage
-
 * TDD practices
-
-
-
----
-
 
 
 ## Networking & APIs
@@ -641,6 +430,7 @@
 * CQRS
 * Saga pattern
 
+
 ## Python Anti-Patterns
 * God objects
 * Spaghetti code
@@ -657,6 +447,7 @@
 * Overengineering
 * Lack of tests
 * Hardcoded configuration
+
 
 ## Python Best Practices
 * Clean code principles
