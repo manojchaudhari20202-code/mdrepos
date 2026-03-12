@@ -526,243 +526,44 @@
 * JPA
 * Jakarta EE
 * Servlet API
-
 * REST frameworks
-
 * gRPC in Java
-
 * Messaging frameworks
-
 * JMS
-
 * Kafka integration
-
 * Reactive frameworks
-
 * Netty
-
 * Vert.x
-
 * Quarkus
-
 * Micronaut
-
 * Build tools
-
 * Maven
-
 * Gradle
-
 * Testing frameworks
-
 * JUnit
-
 * Mockito
 
 
-
-
-
-
-
-# 11. Apache Java Technologies
-
-
-
+## Apache Java Technologies
 * Apache Tomcat
-
 * Apache Kafka (Java ecosystem)
-
 * Apache Camel
-
 * Apache ActiveMQ
-
 * Apache ZooKeeper
-
 * Apache Maven
-
 * Apache Ant
-
 * Apache Commons libraries
-
 * Apache CXF
-
 * Apache Struts
-
 * Apache Dubbo
-
 * Apache Ignite
-
 * Apache Flink (Java APIs)
-
 * Apache Spark (Java APIs)
-
 * Apache Lucene
-
 * Apache Solr
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Java Language & Core Concepts
+## Java Language & Core Concepts
 * Java fundamentals
 * OOP principles
 * Java type system
@@ -775,33 +576,33 @@
 * Pattern matching
 
 #  JVM Internals
-JVM architecture
-Class loading mechanism
-Bytecode execution
-Just-In-Time (JIT) compilation
-Heap vs stack memory
-Garbage collection algorithms
-GC tuning strategies
-Java memory model
-Escape analysis
-Java Flight Recorder
+* JVM architecture
+* Class loading mechanism
+* Bytecode execution
+* Just-In-Time (JIT) compilation
+* Heap vs stack memory
+* Garbage collection algorithms
+* GC tuning strategies
+* Java memory model
+* Escape analysis
+* Java Flight Recorder
 
-# Concurrency & Multithreading
-Thread lifecycle
-Executor framework
-Thread pools design
-Synchronization mechanisms
-Volatile keyword
-Atomic classes
-Lock implementations
-CompletableFuture
-ForkJoinPool
-Virtual threads
-Structured concurrency
-Deadlock detection
-Race condition prevention
+## Concurrency & Multithreading
+* Thread lifecycle
+* Executor framework
+* Thread pools design
+* Synchronization mechanisms
+* Volatile keyword
+* Atomic classes
+* Lock implementations
+* CompletableFuture
+* ForkJoinPool
+* Virtual threads
+* Structured concurrency
+* Deadlock detection
+* Race condition prevention
 
-# Performance Engineering
+## Performance Engineering
 - JVM performance tuning
 - Profiling tools
 - Memory leak detection
@@ -812,7 +613,7 @@ Race condition prevention
 - Connection pooling
 - Serialization optimization
 
-# Java Design Patterns
+## Java Design Patterns
 - Singleton
 - Factory
 - Abstract factory
@@ -828,115 +629,130 @@ Race condition prevention
 - Command
 - Template method
 - State pattern
-6️⃣ Enterprise Application Architecture
-Layered architecture
-Hexagonal architecture
-Clean architecture
-Domain-driven design
-Microservices architecture
-Modular monolith
-Event-driven architecture
-Service-oriented architecture
-7️⃣ Spring Ecosystem
-Spring core
-Spring Boot
-Spring MVC
-Spring Data
-Spring Security
-Spring Cloud
-Spring AOP
-Spring transaction management
-Spring reactive (WebFlux)
-8️⃣ Distributed Systems
-CAP theorem
-Consistency models
-Partitioning strategies
-Service discovery
-Distributed transactions
-Saga pattern
-Circuit breaker
-Retry patterns
-Bulkhead pattern
-9️⃣ Messaging & Event Streaming
-Kafka architecture
-Event-driven systems
-Pub/Sub pattern
-Event sourcing
-CQRS
-Idempotent consumers
-Exactly-once semantics
-🔟 API & Integration Architecture
-REST API design
-API versioning
-OpenAPI specification
-API gateway
-Rate limiting
-OAuth2 / JWT authentication
-API security
-Service contracts
-1️⃣1️⃣ Data Architecture
-Relational database design
-NoSQL databases
-Transaction management
-Isolation levels
-ORM strategies
-JPA/Hibernate internals
-Index optimization
-Query optimization
-1️⃣2️⃣ Cloud & Infrastructure
-Cloud-native architecture
-Containerization
-Kubernetes fundamentals
-Horizontal scaling
-High availability design
-Disaster recovery
-Multi-region deployment
-1️⃣3️⃣ Observability & Reliability
-Logging strategies
-Metrics instrumentation
-Distributed tracing
-SLIs / SLOs / SLAs
-Error budget management
-Health check design
-Incident management
-1️⃣4️⃣ Security Architecture
-Secure coding practices
-Authentication mechanisms
-Authorization models
-OAuth2 / OpenID Connect
-Encryption strategies
-API security
-Secrets management
-1️⃣5️⃣ DevOps & Delivery
-CI/CD pipelines
-Build tools (Maven / Gradle)
-Infrastructure as Code
-Deployment strategies
-Blue-green deployment
-Canary releases
-Environment management
-1️⃣6️⃣ Testing Strategy
-Unit testing
-Integration testing
-Contract testing
-Performance testing
-Concurrency testing
-Testcontainers
-Mocking frameworks
-1️⃣7️⃣ Data Engineering Integration
-Batch processing architecture
-Stream processing architecture
-Data pipeline design
-Data Lake integration
-Real-time data processing
-1️⃣8️⃣ Governance & Enterprise Controls
-Architecture review boards
-Coding standards governance
-Technical debt management
-API lifecycle management
-Compliance readiness
-Audit logging
-# Modern Java Features
+
+
+## Enterprise Application Architecture
+* Layered architecture
+* Hexagonal architecture
+* Clean architecture
+* Domain-driven design
+* Microservices architecture
+* Modular monolith
+* Event-driven architecture
+* Service-oriented architecture
+
+## Spring Ecosystem
+* Spring core
+* Spring Boot
+* Spring MVC
+* Spring Data
+* Spring Security
+* Spring Cloud
+* Spring AOP
+* Spring transaction management
+* Spring reactive (WebFlux)
+
+## Distributed Systems
+* CAP theorem
+* Consistency models
+* Partitioning strategies
+* Service discovery
+* Distributed transactions
+* Saga pattern
+* Circuit breaker
+* Retry patterns
+* Bulkhead pattern
+
+## Messaging & Event Streaming
+- Kafka architecture
+- Event-driven systems
+- Pub/Sub pattern
+- Event sourcing
+- CQRS
+- Idempotent consumers
+- Exactly-once semantics
+
+## API & Integration Architecture
+- REST API design
+- API versioning
+- OpenAPI specification
+- API gateway
+- Rate limiting
+- OAuth2 / JWT authentication
+- API security
+- Service contracts
+
+## Data Architecture
+- Relational database design
+- NoSQL databases
+- Transaction management
+- Isolation levels
+- ORM strategies
+- JPA/Hibernate internals
+- Index optimization
+- Query optimization
+
+## Cloud & Infrastructure
+- Cloud-native architecture
+- Containerization
+- Kubernetes fundamentals
+- Horizontal scaling
+- High availability design
+- Disaster recovery
+- Multi-region deployment
+
+## Observability & Reliability
+- Logging strategies
+- Metrics instrumentation
+- Distributed tracing
+- SLIs / SLOs / SLAs
+- Error budget management
+- Health check design
+- Incident management
+
+## Security Architecture
+- Secure coding practices
+- Authentication mechanisms
+- Authorization models
+- OAuth2 / OpenID Connect
+- Encryption strategies
+- API security
+- Secrets management
+
+## DevOps & Delivery
+- CI/CD pipelines
+- Build tools (Maven / Gradle)
+- Infrastructure as Code
+- Deployment strategies
+- Blue-green deployment
+- Canary releases
+- Environment management
+
+## Testing Strategy
+- Unit testing
+- Integration testing
+- Contract testing
+- Performance testing
+- Concurrency testing
+- Testcontainers
+- Mocking frameworks
+
+## Data Engineering Integration
+- Batch processing architecture
+- Stream processing architecture
+- Data pipeline design
+- Data Lake integration
+- Real-time data processing
+
+## Governance & Enterprise Controls
+- Architecture review boards
+- Coding standards governance
+- Technical debt management
+- API lifecycle management
+- Compliance readiness
+- Audit logging
+
+## Modern Java Features
 Java modules
 Records
 Pattern matching
@@ -956,9 +772,14 @@ Foreign memory API
 - Cross-domain architecture governance
 
 
-# Java Fundamentals — Senior Developer Interview Study Notes
 
 
+
+
+
+
+
+---
 
 ## 1. Topic Overview
 
