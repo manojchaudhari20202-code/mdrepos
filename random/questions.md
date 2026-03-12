@@ -1,0 +1,15 @@
+- Write a SQL query to detect overlapping subscription periods for the same user.
+- Rank the top 3 departments (with ≥10 employees) by % of staff earning more than 100K.
+- Explain Star Schema vs. Snowflake Schema, and when you’d choose one over the other.
+- Describe Slowly Changing Dimensions (SCDs) and name 2–3 types.
+- How would you implement incremental updates in a daily ETL pipeline?
+- Design an ETL pipeline for ingesting semi-structured logs, transforming, and loading into a data warehouse.
+- Explain Full Load vs. Incremental Load in ETL. When does each apply?
+- How do you monitor and alert on ETL job failures or data quality issues?
+- Compare Hadoop MapReduce vs. Apache Spark. Highlight Spark’s in-memory processing advantages.
+- What is Data Locality in Hadoop? Why is it important?
+- Explain the 4Vs of Big Data – Volume, Velocity, Variety, Veracity.
+- What is a Data Lake vs. Data Warehouse? Discuss schema-on-read vs. schema-on-write and use cases.
+- How does Cloud Computing (AWS, GCP, Azure) support Data Engineering at scale?
+- Explain Partitioning vs. Indexing vs. Bucketing in large tables.
+- What is the CAP Theorem, and how does it apply to distributed systems?

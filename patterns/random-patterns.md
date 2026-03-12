@@ -274,3 +274,28 @@
   *Example: Each microservice owns its database.*
 - **Canonical Data Model**: As described earlier.  
   *Example: Standardized data formats.*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
