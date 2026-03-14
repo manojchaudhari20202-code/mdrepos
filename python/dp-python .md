@@ -9608,6 +9608,499 @@ if i > 0 and arr[i] == arr[i - 1]: continue   # skip duplicate fixed element
 
 ---
 
+# Greedy Algorithms — Interview Notes
+
+---
+
+## Core Greedy Intuition
+
+A greedy algorithm makes the **locally optimal choice at each step**, hoping to reach a global optimum. Key interview signal: always justify *why* greedy works (exchange argument or contradiction proof).
+
+**Greedy works when:**
+- Problem has **optimal substructure** (optimal solution contains optimal sub-solutions)
+- Problem has **greedy choice property** (local optimum → global optimum)
+
+**Greedy fails when:** future choices depend on current ones in complex ways → use DP instead.
+
+---
+
+## 1. Activity Selection
+
+**Problem:** Given `n` activities with start/end times, select the **maximum number of non-overlapping activities**.
+
+**Greedy Choice:** Always pick the activity that **ends earliest** (frees up time for more activities).
+
+**Why it works:** Finishing early leaves maximum room. Any other choice can be swapped with the earliest-ending activity without reducing count (exchange argument).
+
+```python
+def activity_selection(activities):
+    # activities = [(start, end), ...]
+    activities.sort(key=lambda x: x[1])  # sort by end time
+    
+    selected = [activities[0]]
+    last_end = activities[0][1]
+    
+    for start, end in activities[1:]:
+        if start >= last_end:          # no overlap
+            selected.append((start, end))
+            last_end = end
+    
+    return selected
+
+# Example
+acts = [(1,4), (3,5), (0,6), (5,7), (3,9), (5,9), (6,10), (8,11), (8,12), (2,14), (12,16)]
+print(activity_selection(acts))
+# [(1,4), (5,7), (8,11), (12,16)] → 4 activities
+```
+
+**Interview Traps:**
+- Sorting by start time is **wrong** — greedy must sort by **end time**
+- If asked for the actual activities (not just count), track which ones were selected
+- Overlap condition: `start >= last_end` (touching is allowed), `start > last_end` if touching is not allowed — clarify with interviewer
+
+---
+
+## 2. Fractional Knapsack
+
+**Problem:** Items with weight and value, knapsack capacity `W`. You **can take fractions** of items. Maximize value.
+
+**Greedy Choice:** Sort by **value/weight ratio** descending. Take as much of the best ratio item as possible.
+
+**Key distinction from 0/1 Knapsack:** 0/1 knapsack requires DP. Fractional works with greedy because partial items are allowed.
+
+```python
+def fractional_knapsack(capacity, items):
+    # items = [(value, weight), ...]
+    # sort by value/weight ratio descending
+    items = sorted(items, key=lambda x: x[0]/x[1], reverse=True)
+    
+    total_value = 0.0
+    remaining = capacity
+    
+    for value, weight in items:
+        if remaining <= 0:
+            break
+        take = min(weight, remaining)      # take full item or fraction
+        total_value += take * (value / weight)
+        remaining -= take
+    
+    return total_value
+
+# Example
+items = [(60, 10), (100, 20), (120, 30)]  # (value, weight)
+capacity = 50
+print(fractional_knapsack(capacity, items))  # 240.0
+# Takes all of item1 (10kg), all of item2 (20kg), 2/3 of item3 (20kg)
+# 60 + 100 + 80 = 240
+```
+
+**Interview Traps:**
+- Don't confuse with 0/1 knapsack — if "fractional" isn't mentioned, assume DP
+- Time complexity: O(n log n) for sort + O(n) loop = **O(n log n)**
+- Always return float, not int
+
+---
+
+## 3. Job Scheduling (Maximize Profit / Deadline Scheduling)
+
+**Problem:** Each job has a deadline and profit. Each job takes 1 unit of time. Schedule jobs to **maximize profit** (only one job per time slot, must complete by deadline).
+
+**Greedy Choice:** Sort jobs by **profit descending**. For each job, assign it to the **latest available slot ≤ deadline**.
+
+```python
+def job_scheduling(jobs):
+    # jobs = [(job_id, deadline, profit), ...]
+    jobs.sort(key=lambda x: x[2], reverse=True)  # sort by profit desc
+    
+    max_deadline = max(d for _, d, _ in jobs)
+    slots = [None] * (max_deadline + 1)   # slots[1..max_deadline]
+    
+    total_profit = 0
+    scheduled = []
+    
+    for job_id, deadline, profit in jobs:
+        # find latest free slot from deadline down to 1
+        for t in range(deadline, 0, -1):
+            if slots[t] is None:
+                slots[t] = job_id
+                total_profit += profit
+                scheduled.append(job_id)
+                break
+    
+    return total_profit, scheduled
+
+# Example
+jobs = [('J1', 2, 100), ('J2', 1, 19), ('J3', 2, 27), ('J4', 1, 25), ('J5', 3, 15)]
+print(job_scheduling(jobs))
+# Profit: 142, Scheduled: ['J1', 'J3', 'J5'] or similar
+```
+
+**Optimized with Union-Find** (for large inputs):
+
+```python
+def job_scheduling_uf(jobs):
+    jobs.sort(key=lambda x: -x[2])
+    max_d = max(d for _, d, _ in jobs)
+    
+    parent = list(range(max_d + 1))
+    
+    def find(x):
+        if parent[x] != x:
+            parent[x] = find(parent[x])
+        return parent[x]
+    
+    profit = 0
+    for job_id, d, p in jobs:
+        slot = find(d)
+        if slot > 0:
+            profit += p
+            parent[slot] = slot - 1   # point to previous free slot
+    return profit
+```
+
+**Interview Traps:**
+- Brute force is O(n²); Union-Find solution is O(n log n)
+- Clarify: can jobs have equal deadlines? What if deadline > number of time slots?
+
+---
+
+## 4. Huffman Coding
+
+**Problem:** Given character frequencies, build a **prefix-free binary encoding** that minimizes total encoded length.
+
+**Greedy Choice:** Always merge the **two nodes with smallest frequency** (min-heap).
+
+**Why it works:** Lower frequency → longer code. Merging smallest ensures most frequent chars get shortest codes.
+
+```python
+import heapq
+from collections import defaultdict
+
+class HuffmanNode:
+    def __init__(self, char, freq):
+        self.char = char
+        self.freq = freq
+        self.left = self.right = None
+    
+    def __lt__(self, other):       # needed for heap comparison
+        return self.freq < other.freq
+
+def build_huffman(text):
+    freq = defaultdict(int)
+    for ch in text:
+        freq[ch] += 1
+    
+    heap = [HuffmanNode(ch, f) for ch, f in freq.items()]
+    heapq.heapify(heap)
+    
+    while len(heap) > 1:
+        left = heapq.heappop(heap)
+        right = heapq.heappop(heap)
+        
+        merged = HuffmanNode(None, left.freq + right.freq)
+        merged.left = left
+        merged.right = right
+        heapq.heappush(heap, merged)
+    
+    root = heap[0]
+    
+    # Generate codes
+    codes = {}
+    def generate_codes(node, code=""):
+        if node is None:
+            return
+        if node.char is not None:      # leaf node
+            codes[node.char] = code if code else "0"
+            return
+        generate_codes(node.left, code + "0")
+        generate_codes(node.right, code + "1")
+    
+    generate_codes(root)
+    return codes, root
+
+# Encode and Decode
+def huffman_encode(text, codes):
+    return ''.join(codes[ch] for ch in text)
+
+def huffman_decode(encoded, root):
+    result = []
+    node = root
+    for bit in encoded:
+        node = node.left if bit == '0' else node.right
+        if node.char is not None:
+            result.append(node.char)
+            node = root
+    return ''.join(result)
+
+# Example
+text = "abracadabra"
+codes, root = build_huffman(text)
+print(codes)        # {'a': '0', 'b': '10', 'r': '110', 'c': '1110', 'd': '1111'} (varies)
+encoded = huffman_encode(text, codes)
+print(huffman_decode(encoded, root))  # abracadabra
+```
+
+**Complexity:** O(n log n) — n heap operations each O(log n)
+
+**Interview Traps:**
+- Handle single unique character edge case (assign code "0")
+- `__lt__` override is required for `heapq` with custom objects
+- Huffman is **optimal** among prefix-free codes (provable by exchange argument)
+- Space complexity of tree: O(n)
+
+---
+
+## 5. Meeting Rooms
+
+### Variant 1 — Can one person attend all meetings?
+
+```python
+def can_attend_all(intervals):
+    intervals.sort(key=lambda x: x[0])   # sort by start
+    for i in range(1, len(intervals)):
+        if intervals[i][0] < intervals[i-1][1]:   # overlap
+            return False
+    return True
+
+# [[0,30],[5,10],[15,20]] → False
+# [[7,10],[2,4]] → True
+```
+
+### Variant 2 — Minimum meeting rooms required
+
+**Greedy Choice:** Use a min-heap tracking **end times of ongoing meetings**. If the earliest-ending meeting is done, reuse its room.
+
+```python
+import heapq
+
+def min_meeting_rooms(intervals):
+    if not intervals:
+        return 0
+    
+    intervals.sort(key=lambda x: x[0])   # sort by start time
+    heap = []   # min-heap of end times
+    
+    for start, end in intervals:
+        if heap and heap[0] <= start:
+            heapq.heapreplace(heap, end)   # reuse room
+        else:
+            heapq.heappush(heap, end)      # new room needed
+    
+    return len(heap)
+
+# [[0,30],[5,10],[15,20]] → 2
+# [[9,10],[4,9],[4,17]] → 2
+```
+
+**Alternative — Sweep Line (Two Pointer):**
+
+```python
+def min_meeting_rooms_sweep(intervals):
+    starts = sorted(s for s, e in intervals)
+    ends   = sorted(e for s, e in intervals)
+    
+    rooms = max_rooms = 0
+    j = 0
+    for i in range(len(starts)):
+        if starts[i] < ends[j]:
+            rooms += 1
+        else:
+            j += 1
+        max_rooms = max(max_rooms, rooms)
+    return max_rooms
+```
+
+**Interview Traps:**
+- Variant 1: sort by start; Variant 2: sort by start + min-heap on end times
+- `heap[0] <= start` means the room is **free** (meeting ended at or before new one starts)
+- Both heap approach and sweep line are O(n log n)
+
+---
+
+## 6. Merge Intervals
+
+**Problem:** Given a list of intervals, merge all overlapping ones.
+
+**Greedy Choice:** Sort by start time. Merge current interval with previous if they overlap.
+
+```python
+def merge_intervals(intervals):
+    if not intervals:
+        return []
+    
+    intervals.sort(key=lambda x: x[0])
+    merged = [intervals[0]]
+    
+    for start, end in intervals[1:]:
+        if start <= merged[-1][1]:              # overlaps
+            merged[-1][1] = max(merged[-1][1], end)   # extend
+        else:
+            merged.append([start, end])
+    
+    return merged
+
+# [[1,3],[2,6],[8,10],[15,18]] → [[1,6],[8,10],[15,18]]
+# [[1,4],[4,5]] → [[1,5]]  (touching = overlapping)
+```
+
+**Insert Interval variant** (insert into sorted non-overlapping list):
+
+```python
+def insert_interval(intervals, new_interval):
+    result = []
+    i, n = 0, len(intervals)
+    
+    # Add all intervals that end before new_interval starts
+    while i < n and intervals[i][1] < new_interval[0]:
+        result.append(intervals[i])
+        i += 1
+    
+    # Merge overlapping intervals
+    while i < n and intervals[i][0] <= new_interval[1]:
+        new_interval[0] = min(new_interval[0], intervals[i][0])
+        new_interval[1] = max(new_interval[1], intervals[i][1])
+        i += 1
+    result.append(new_interval)
+    
+    # Add remaining
+    result.extend(intervals[i:])
+    return result
+```
+
+**Interview Traps:**
+- `merged[-1][1] = max(...)` — don't just assign `end`; the new interval may be **fully contained** in the previous one
+- Use `[start, end]` (mutable list) not tuples if you modify in-place
+- Time: O(n log n), Space: O(n)
+
+---
+
+## 7. Minimum Platforms (Train Station)
+
+**Problem:** Given arrival and departure times of trains, find the **minimum number of platforms** needed so no train waits.
+
+**This is identical in structure to Meeting Rooms II.**
+
+**Greedy Choice:** Sort arrivals and departures separately. Use two pointers to simulate.
+
+```python
+def min_platforms(arrivals, departures):
+    arrivals.sort()
+    departures.sort()
+    
+    platforms = max_platforms = 0
+    i = j = 0
+    n = len(arrivals)
+    
+    while i < n:
+        if arrivals[i] <= departures[j]:   # train arrives before previous departs
+            platforms += 1
+            i += 1
+        else:
+            platforms -= 1
+            j += 1
+        max_platforms = max(max_platforms, platforms)
+    
+    return max_platforms
+
+# arrivals   = [900, 940, 950, 1100, 1500, 1800]
+# departures = [910, 1200, 1120, 1130, 1900, 2000]
+# Output: 3
+```
+
+**Interview Traps:**
+- Arrival ≤ departure of existing: platform needed (train arrives before another leaves)
+- This is **not** the same as merge intervals — trains on same platform means no overlap
+- Both arrays must be sorted **independently** — don't sort pairs together
+- Edge: `arrivals[i] == departures[j]` means a train departs exactly when another arrives — one platform suffices (but verify with interviewer — convention varies)
+
+---
+
+## 8. Coin Change (Greedy)
+
+**Important caveat:** Greedy works **only for canonical coin systems** (like US coins: 1, 5, 10, 25). For arbitrary denominations, use **DP**.
+
+**Greedy Choice:** Always pick the **largest coin ≤ remaining amount**.
+
+```python
+def coin_change_greedy(coins, amount):
+    coins.sort(reverse=True)   # largest first
+    count = 0
+    result = []
+    
+    for coin in coins:
+        while amount >= coin:
+            amount -= coin
+            count += 1
+            result.append(coin)
+    
+    if amount != 0:
+        return -1   # not possible with greedy
+    return count, result
+
+# coins = [1, 5, 10, 25], amount = 36
+# → (3, [25, 10, 1])  ✓ correct for canonical system
+
+# coins = [1, 3, 4], amount = 6
+# Greedy: [4, 1, 1] = 3 coins  ✗ WRONG
+# DP:     [3, 3]    = 2 coins  ✓ CORRECT
+```
+
+**DP version (correct for all cases) — know this for interviews:**
+
+```python
+def coin_change_dp(coins, amount):
+    dp = [float('inf')] * (amount + 1)
+    dp[0] = 0
+    
+    for i in range(1, amount + 1):
+        for coin in coins:
+            if coin <= i:
+                dp[i] = min(dp[i], dp[i - coin] + 1)
+    
+    return dp[amount] if dp[amount] != float('inf') else -1
+```
+
+**Interview Traps:**
+- The most common trap: assuming greedy always works for coin change — **it doesn't**
+- If interviewer gives arbitrary coins, default to DP
+- Greedy is O(amount/min_coin) in worst case; DP is O(n × amount)
+- Always ask: "Are these standard denominations or arbitrary?"
+
+---
+
+## Complexity Summary
+
+| Problem | Time | Space | Key Sort |
+|---|---|---|---|
+| Activity Selection | O(n log n) | O(n) | End time ↑ |
+| Fractional Knapsack | O(n log n) | O(1) | Value/weight ratio ↓ |
+| Job Scheduling | O(n²) / O(n log n) with UF | O(n) | Profit ↓ |
+| Huffman Coding | O(n log n) | O(n) | Min-heap |
+| Meeting Rooms II | O(n log n) | O(n) | Start time ↑ |
+| Merge Intervals | O(n log n) | O(n) | Start time ↑ |
+| Minimum Platforms | O(n log n) | O(1) | Separate arrays |
+| Coin Change (greedy) | O(n × amount) | O(1) | Coin value ↓ |
+
+---
+
+## Interview Cheat Sheet — Greedy Decision Triggers
+
+```
+Q asks "maximum number of non-overlapping"   → Activity Selection (sort by end)
+Q asks "minimum rooms / platforms / resources" → Sweep line or min-heap on end times
+Q asks "merge overlapping intervals"          → Sort by start, scan and extend
+Q asks "fractional" + "maximize value"        → Sort by ratio
+Q asks "profit + deadline, 1 unit jobs"       → Job scheduling (sort by profit)
+Q asks "compress / encode characters"         → Huffman (min-heap)
+Q asks "fewest coins" + standard denominations → Greedy (largest first)
+Q asks "fewest coins" + arbitrary denominations → DP, NOT greedy
+```
+
+
+
+
+
+
 
 
 
