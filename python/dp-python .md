@@ -3738,6 +3738,5879 @@ self.tree[node] = min(self.tree[2*node], self.tree[2*node+1])
 ```
 
 
+# Graph Interview Notes — Complete Reference
+
+> **Topics Covered:** Graph Basics · Traversal · Shortest Path · Advanced Graph  
+> **Language:** Python
+
+---
+
+# Table of Contents
+
+1. [Graph Basics](#graph-basics)
+   - [Adjacency List](#adjacency-list)
+   - [Adjacency Matrix](#adjacency-matrix)
+   - [Graph Representation](#graph-representation)
+   - [Directed Graphs](#directed-graphs)
+   - [Undirected Graphs](#undirected-graphs)
+   - [Weighted Graphs](#weighted-graphs)
+2. [Traversal](#traversal)
+   - [Depth First Search (DFS)](#depth-first-search-dfs)
+   - [Breadth First Search (BFS)](#breadth-first-search-bfs)
+   - [Connected Components](#connected-components)
+   - [Cycle Detection](#cycle-detection)
+   - [Topological Sort](#topological-sort)
+   - [Strongly Connected Components (SCC)](#strongly-connected-components-scc)
+3. [Shortest Path](#shortest-path)
+   - [Dijkstra's Algorithm](#dijkstras-algorithm)
+   - [Bellman-Ford](#bellman-ford)
+   - [Floyd-Warshall](#floyd-warshall)
+   - [0-1 BFS](#0-1-bfs)
+4. [Advanced Graph](#advanced-graph)
+   - [Minimum Spanning Tree (MST)](#minimum-spanning-tree-mst)
+   - [Union-Find (DSU)](#union-find-disjoint-set-union---dsu)
+   - [Bipartite Graph Check](#bipartite-graph-check)
+   - [Graph Coloring](#graph-coloring)
+
+---
+
+# Graph Basics
+
+---
+
+## Adjacency List
+
+### Concept
+- Stores a graph as a dictionary/array where each key is a node and its value is a list of neighbors.
+- Most common representation in interviews — default choice unless asked otherwise.
+- Space: **O(V + E)** — only stores existing edges.
+
+### When to Use
+- Sparse graphs (few edges relative to nodes)
+- Most real-world graphs (social networks, road maps)
+- When you need to iterate over neighbors efficiently
+
+### Python Implementation
+
+```python
+# Using defaultdict — most interview-friendly
+from collections import defaultdict
+
+graph = defaultdict(list)
+
+# Adding edges (undirected)
+graph[1].append(2)
+graph[2].append(1)
+graph[1].append(3)
+graph[3].append(1)
+
+# Adding edges (directed)
+graph[1].append(4)  # only 1 → 4, NOT 4 → 1
+
+print(dict(graph))
+# {1: [2, 3, 4], 2: [1], 3: [1]}
+```
+
+```python
+# Building from edge list — very common in interviews
+def build_graph(n, edges, directed=False):
+    graph = defaultdict(list)
+    for u, v in edges:
+        graph[u].append(v)
+        if not directed:
+            graph[v].append(u)
+    return graph
+
+edges = [(1,2), (1,3), (2,4)]
+g = build_graph(4, edges)
+```
+
+```python
+# Weighted adjacency list
+graph = defaultdict(list)
+graph[1].append((2, 5))   # (neighbor, weight)
+graph[1].append((3, 10))
+graph[2].append((4, 3))
+```
+
+### Interview Traps
+- Always clarify: **directed or undirected?** Undirected → add both directions.
+- For weighted graphs, store tuples `(neighbor, weight)`.
+- `defaultdict(list)` avoids KeyError — prefer it over plain `{}`.
+
+---
+
+## Adjacency Matrix
+
+### Concept
+- 2D array/matrix `matrix[i][j]` = 1 (or weight) if edge i→j exists, else 0.
+- Space: **O(V²)** — stores all possible edges, even non-existent ones.
+- Edge lookup: **O(1)** — direct index access.
+
+### When to Use
+- Dense graphs (many edges, E ≈ V²)
+- When you need **O(1) edge existence checks**
+- Floyd-Warshall, some DP on graphs
+- Small graphs (V ≤ 1000 typically)
+
+### Python Implementation
+
+```python
+# Build adjacency matrix
+n = 4  # nodes 0..3
+matrix = [[0] * n for _ in range(n)]
+
+# Add undirected edge
+def add_edge(matrix, u, v, weight=1):
+    matrix[u][v] = weight
+    matrix[v][u] = weight  # remove for directed
+
+add_edge(matrix, 0, 1)
+add_edge(matrix, 0, 2)
+add_edge(matrix, 1, 3)
+
+# Check if edge exists
+print(matrix[0][1])  # 1 → exists
+print(matrix[0][3])  # 0 → doesn't exist
+```
+
+```python
+# Weighted adjacency matrix
+INF = float('inf')
+n = 4
+matrix = [[INF] * n for _ in range(n)]
+
+# Distance to self = 0
+for i in range(n):
+    matrix[i][i] = 0
+
+matrix[0][1] = 5
+matrix[1][2] = 3
+matrix[0][2] = 10
+
+# Floyd-Warshall uses this directly
+for k in range(n):
+    for i in range(n):
+        for j in range(n):
+            matrix[i][j] = min(matrix[i][j], matrix[i][k] + matrix[k][j])
+```
+
+### Interview Traps
+- 1-indexed vs 0-indexed node labeling — clarify before coding.
+- Memory blow-up for large sparse graphs (10⁵ nodes → 10¹⁰ cells = infeasible).
+- Self-loops: `matrix[i][i]` — ask interviewer if they're possible.
+
+---
+
+## Graph Representation
+
+### Comparison Table
+
+| Feature | Adjacency List | Adjacency Matrix |
+|---|---|---|
+| Space | O(V + E) | O(V²) |
+| Add edge | O(1) | O(1) |
+| Remove edge | O(degree) | O(1) |
+| Check edge (u,v) | O(degree) | O(1) |
+| Get all neighbors | O(degree) | O(V) |
+| Best for | Sparse graphs | Dense graphs |
+
+### Edge List Representation
+
+```python
+# Simplest — just store all edges
+# Used in Kruskal's MST, Union-Find problems
+edges = [(0,1,4), (0,2,1), (1,3,2)]  # (u, v, weight)
+
+# Sort edges by weight — common pattern
+edges.sort(key=lambda x: x[2])
+```
+
+### Converting Between Representations
+
+```python
+# Edge list → Adjacency list
+def edge_list_to_adj(n, edges, directed=False):
+    graph = defaultdict(list)
+    for u, v in edges:
+        graph[u].append(v)
+        if not directed:
+            graph[v].append(u)
+    return graph
+
+# Adjacency matrix → Adjacency list
+def matrix_to_adj(matrix):
+    n = len(matrix)
+    graph = defaultdict(list)
+    for i in range(n):
+        for j in range(n):
+            if matrix[i][j] != 0:
+                graph[i].append(j)
+    return graph
+```
+
+---
+
+## Directed Graphs
+
+### Concept
+- Edges have direction: u → v does NOT imply v → u.
+- In-degree: number of edges **coming into** a node.
+- Out-degree: number of edges **going out of** a node.
+
+### Python Implementation
+
+```python
+from collections import defaultdict, deque
+
+# Build directed graph
+def build_directed(n, edges):
+    graph = defaultdict(list)
+    in_degree = [0] * (n + 1)
+    for u, v in edges:
+        graph[u].append(v)
+        in_degree[v] += 1       # track in-degree for topo sort
+    return graph, in_degree
+```
+
+```python
+# Cycle detection in directed graph — DFS with 3 states
+# WHITE=0 (unvisited), GRAY=1 (in stack), BLACK=2 (done)
+def has_cycle_directed(graph, n):
+    color = [0] * n
+
+    def dfs(node):
+        color[node] = 1  # GRAY — currently visiting
+        for neighbor in graph[node]:
+            if color[neighbor] == 1:
+                return True   # back edge → cycle
+            if color[neighbor] == 0:
+                if dfs(neighbor):
+                    return True
+        color[node] = 2  # BLACK — fully processed
+        return False
+
+    for i in range(n):
+        if color[i] == 0:
+            if dfs(i):
+                return True
+    return False
+```
+
+```python
+# Topological Sort — Kahn's Algorithm (BFS)
+def topo_sort(n, edges):
+    graph, in_degree = build_directed(n, edges)
+    queue = deque([i for i in range(1, n+1) if in_degree[i] == 0])
+    order = []
+
+    while queue:
+        node = queue.popleft()
+        order.append(node)
+        for neighbor in graph[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+
+    return order if len(order) == n else []  # empty → cycle exists
+```
+
+### Key Interview Points
+- **Topological sort only works on DAGs** (Directed Acyclic Graphs).
+- Cycle detection: use **visited + recursion stack** (not just visited).
+- Transpose graph (reverse all edges) → used in Kosaraju's SCC algorithm.
+- Common problems: Course Schedule (LC 207/210), Alien Dictionary.
+
+---
+
+## Undirected Graphs
+
+### Python Implementation
+
+```python
+# BFS traversal — undirected
+from collections import deque
+
+def bfs(graph, start, n):
+    visited = set([start])
+    queue = deque([start])
+    order = []
+
+    while queue:
+        node = queue.popleft()
+        order.append(node)
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+    return order
+```
+
+```python
+# DFS traversal — undirected
+def dfs(graph, node, visited):
+    visited.add(node)
+    for neighbor in graph[node]:
+        if neighbor not in visited:
+            dfs(graph, neighbor, visited)
+
+# Count connected components
+def count_components(n, edges):
+    graph = build_graph(n, edges)
+    visited = set()
+    count = 0
+    for i in range(1, n+1):
+        if i not in visited:
+            dfs(graph, i, visited)
+            count += 1
+    return count
+```
+
+```python
+# Cycle detection in undirected graph — DFS
+def has_cycle_undirected(graph, n):
+    visited = set()
+
+    def dfs(node, parent):
+        visited.add(node)
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                if dfs(neighbor, node):
+                    return True
+            elif neighbor != parent:   # visited AND not parent → cycle
+                return True
+        return False
+
+    for i in range(n):
+        if i not in visited:
+            if dfs(i, -1):
+                return True
+    return False
+```
+
+```python
+# Bipartite check — 2-coloring via BFS
+def is_bipartite(graph, n):
+    color = [-1] * n
+
+    for start in range(n):
+        if color[start] != -1:
+            continue
+        queue = deque([start])
+        color[start] = 0
+
+        while queue:
+            node = queue.popleft()
+            for neighbor in graph[node]:
+                if color[neighbor] == -1:
+                    color[neighbor] = 1 - color[node]  # flip color
+                    queue.append(neighbor)
+                elif color[neighbor] == color[node]:
+                    return False  # same color → not bipartite
+    return True
+```
+
+### Key Interview Points
+- Cycle detection: track **parent** node to avoid false positives.
+- **Union-Find** is often cleaner for cycle detection in undirected graphs.
+- Bipartite = can be 2-colored = no odd-length cycles.
+- Always handle **disconnected graphs** — loop over all nodes, not just node 0.
+
+---
+
+## Weighted Graphs
+
+### Dijkstra's (non-negative weights)
+
+```python
+import heapq
+
+def dijkstra(graph, start, n):
+    dist = [float('inf')] * (n + 1)
+    dist[start] = 0
+    min_heap = [(0, start)]  # (distance, node)
+
+    while min_heap:
+        d, node = heapq.heappop(min_heap)
+
+        if d > dist[node]:   # stale entry — skip
+            continue
+
+        for neighbor, weight in graph[node]:
+            new_dist = dist[node] + weight
+            if new_dist < dist[neighbor]:
+                dist[neighbor] = new_dist
+                heapq.heappush(min_heap, (new_dist, neighbor))
+
+    return dist
+```
+
+```python
+# Bellman-Ford — handles negative weights
+def bellman_ford(n, edges, start):
+    dist = [float('inf')] * (n + 1)
+    dist[start] = 0
+
+    for _ in range(n - 1):
+        for u, v, w in edges:
+            if dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+
+    # Check for negative weight cycles
+    for u, v, w in edges:
+        if dist[u] + w < dist[v]:
+            return None  # negative cycle detected
+
+    return dist
+```
+
+```python
+# Prim's MST — greedy, uses min-heap
+def prims_mst(graph, n):
+    visited = set()
+    min_heap = [(0, 0)]  # (weight, node) — start from node 0
+    total_cost = 0
+
+    while min_heap and len(visited) < n:
+        cost, node = heapq.heappop(min_heap)
+        if node in visited:
+            continue
+        visited.add(node)
+        total_cost += cost
+
+        for neighbor, weight in graph[node]:
+            if neighbor not in visited:
+                heapq.heappush(min_heap, (weight, neighbor))
+
+    return total_cost if len(visited) == n else -1  # -1 if disconnected
+```
+
+```python
+# Kruskal's MST — Union-Find based
+class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [0] * n
+
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])  # path compression
+        return self.parent[x]
+
+    def union(self, x, y):
+        px, py = self.find(x), self.find(y)
+        if px == py:
+            return False  # already connected → adding edge = cycle
+        if self.rank[px] < self.rank[py]:
+            px, py = py, px
+        self.parent[py] = px
+        if self.rank[px] == self.rank[py]:
+            self.rank[px] += 1
+        return True
+
+def kruskal_mst(n, edges):
+    edges.sort(key=lambda x: x[2])  # sort by weight
+    uf = UnionFind(n)
+    mst_cost = 0
+    edges_used = 0
+
+    for u, v, w in edges:
+        if uf.union(u, v):
+            mst_cost += w
+            edges_used += 1
+            if edges_used == n - 1:
+                break
+
+    return mst_cost if edges_used == n - 1 else -1
+```
+
+### Algorithm Comparison
+
+| Algorithm | Time | Use Case |
+|---|---|---|
+| Dijkstra | O((V+E) log V) | Non-negative weights, SSSP |
+| Bellman-Ford | O(VE) | Negative weights, detect neg cycles |
+| Floyd-Warshall | O(V³) | All-pairs shortest path |
+| Prim's | O(E log V) | MST, dense graphs |
+| Kruskal's | O(E log E) | MST, sparse graphs |
+
+### Key Interview Points
+- Dijkstra **fails** with negative weights — always flag this.
+- Stale heap entries are handled by the `if d > dist[node]: continue` guard.
+- Kruskal's needs edges upfront; Prim's works incrementally — mention this tradeoff.
+
+---
+
+### Quick Decision Tree
+
+```
+Need shortest path?
+  → Unweighted: BFS
+  → Weighted, non-negative: Dijkstra
+  → Weighted, negative: Bellman-Ford
+  → All pairs: Floyd-Warshall
+
+Need ordering/scheduling?
+  → Topological Sort (detect cycle = impossible schedule)
+
+Need connected components / cycle detection?
+  → Undirected: BFS/DFS or Union-Find
+  → Directed: DFS with 3-color marking
+
+Need minimum spanning tree?
+  → Sparse: Kruskal's + Union-Find
+  → Dense: Prim's + min-heap
+```
+
+---
+
+# Traversal
+
+---
+
+## Depth First Search (DFS)
+
+### Concept
+- Explore as **deep as possible** before backtracking.
+- Uses a **stack** (implicit via recursion, or explicit stack iteratively).
+- Time: **O(V + E)** | Space: **O(V)** for visited + recursion stack.
+
+### Recursive DFS
+
+```python
+from collections import defaultdict
+
+def dfs_recursive(graph, node, visited):
+    visited.add(node)
+    print(node)  # process node
+
+    for neighbor in graph[node]:
+        if neighbor not in visited:
+            dfs_recursive(graph, neighbor, visited)
+
+# Driver
+graph = defaultdict(list)
+edges = [(0,1),(0,2),(1,3),(2,4)]
+for u, v in edges:
+    graph[u].append(v)
+    graph[v].append(u)
+
+visited = set()
+dfs_recursive(graph, 0, visited)
+```
+
+### Iterative DFS
+
+```python
+def dfs_iterative(graph, start):
+    visited = set()
+    stack = [start]
+    order = []
+
+    while stack:
+        node = stack.pop()          # LIFO — key difference from BFS
+        if node in visited:
+            continue
+        visited.add(node)
+        order.append(node)
+
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                stack.append(neighbor)
+
+    return order
+```
+
+### DFS on a Grid
+
+```python
+# LC 200 — Number of Islands pattern
+def dfs_grid(grid, row, col, visited):
+    rows, cols = len(grid), len(grid[0])
+    directions = [(0,1),(0,-1),(1,0),(-1,0)]
+
+    if (row < 0 or row >= rows or
+        col < 0 or col >= cols or
+        (row, col) in visited or
+        grid[row][col] == '0'):
+        return
+
+    visited.add((row, col))
+
+    for dr, dc in directions:
+        dfs_grid(grid, row + dr, col + dc, visited)
+
+def num_islands(grid):
+    if not grid:
+        return 0
+    visited = set()
+    count = 0
+
+    for r in range(len(grid)):
+        for c in range(len(grid[0])):
+            if grid[r][c] == '1' and (r, c) not in visited:
+                dfs_grid(grid, r, c, visited)
+                count += 1
+    return count
+```
+
+### DFS Path Finding
+
+```python
+# Check if path exists between src and dst
+def has_path(graph, src, dst, visited):
+    if src == dst:
+        return True
+    visited.add(src)
+
+    for neighbor in graph[src]:
+        if neighbor not in visited:
+            if has_path(graph, neighbor, dst, visited):
+                return True
+    return False
+
+# Collect ALL paths from src to dst (backtracking)
+def all_paths(graph, src, dst):
+    result = []
+
+    def dfs(node, path):
+        if node == dst:
+            result.append(list(path))
+            return
+        for neighbor in graph[node]:
+            path.append(neighbor)
+            dfs(neighbor, path)
+            path.pop()          # backtrack
+
+    dfs(src, [src])
+    return result
+```
+
+### Key Interview Points
+- Python default recursion limit = **1000** — mention `sys.setrecursionlimit()` or switch to iterative for large inputs.
+- Iterative DFS visits neighbors in **reverse order** vs recursive — acceptable unless exact order matters.
+- Always mark node visited **before** recursing (not after) to avoid infinite loops.
+
+---
+
+## Breadth First Search (BFS)
+
+### Concept
+- Explore all nodes at current depth **before going deeper**.
+- Uses a **queue** (deque for O(1) popleft).
+- Guarantees **shortest path** in unweighted graphs.
+- Time: **O(V + E)** | Space: **O(V)**
+
+### Standard BFS
+
+```python
+from collections import deque
+
+def bfs(graph, start):
+    visited = set([start])
+    queue = deque([start])
+    order = []
+
+    while queue:
+        node = queue.popleft()      # FIFO — key difference from DFS
+        order.append(node)
+
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)   # mark visited ON ENQUEUE not dequeue
+                queue.append(neighbor)
+
+    return order
+```
+
+### BFS with Level Tracking
+
+```python
+# Returns {node: distance_from_start}
+def bfs_distances(graph, start):
+    visited = set([start])
+    queue = deque([(start, 0)])     # (node, level)
+    distances = {start: 0}
+
+    while queue:
+        node, level = queue.popleft()
+
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                distances[neighbor] = level + 1
+                queue.append((neighbor, level + 1))
+
+    return distances
+
+# Process level by level
+def bfs_by_level(graph, start):
+    visited = set([start])
+    queue = deque([start])
+    levels = []
+
+    while queue:
+        level_size = len(queue)         # snapshot current level
+        current_level = []
+
+        for _ in range(level_size):     # process exactly this level
+            node = queue.popleft()
+            current_level.append(node)
+            for neighbor in graph[node]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+
+        levels.append(current_level)
+
+    return levels
+```
+
+### BFS Shortest Path (reconstruct actual path)
+
+```python
+def bfs_shortest_path(graph, start, end):
+    if start == end:
+        return [start]
+
+    visited = set([start])
+    queue = deque([[start]])            # store full path in queue
+
+    while queue:
+        path = queue.popleft()
+        node = path[-1]
+
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                new_path = path + [neighbor]
+                if neighbor == end:
+                    return new_path     # found shortest path
+                visited.add(neighbor)
+                queue.append(new_path)
+
+    return []   # no path exists
+```
+
+### Multi-Source BFS
+
+```python
+# LC 994 — Rotting Oranges pattern
+def multi_source_bfs(grid):
+    rows, cols = len(grid), len(grid[0])
+    queue = deque()
+    visited = set()
+
+    # Enqueue ALL starting nodes first
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 2:             # rotten orange
+                queue.append(((r, c), 0))
+                visited.add((r, c))
+
+    max_time = 0
+    directions = [(0,1),(0,-1),(1,0),(-1,0)]
+
+    while queue:
+        (r, c), time = queue.popleft()
+        max_time = max(max_time, time)
+
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+            if (0 <= nr < rows and 0 <= nc < cols and
+                (nr, nc) not in visited and
+                grid[nr][nc] == 1):
+                visited.add((nr, nc))
+                queue.append(((nr, nc), time + 1))
+
+    return max_time
+```
+
+### BFS vs DFS
+
+| | BFS | DFS |
+|---|---|---|
+| Data Structure | Queue (deque) | Stack / Recursion |
+| Shortest Path | ✅ Guaranteed (unweighted) | ❌ Not guaranteed |
+| Memory | O(V) — wide levels | O(V) — depth of graph |
+| Cycle Detection | ✅ Yes | ✅ Yes |
+| Topological Sort | ✅ Kahn's Algorithm | ✅ DFS-based |
+| Best for | Shortest path, level order | Path existence, cycles, topo sort |
+
+### Key Interview Points
+- Mark visited **when enqueuing**, not dequeuing — prevents adding duplicates.
+- `deque` is mandatory — `list.pop(0)` is O(n), `deque.popleft()` is O(1).
+- BFS = shortest path **only for unweighted** — use Dijkstra for weighted.
+- Multi-source BFS: enqueue ALL sources at time=0, then BFS simultaneously.
+
+---
+
+## Connected Components
+
+### BFS/DFS Approach
+
+```python
+# Count + label connected components
+def connected_components(n, edges):
+    graph = defaultdict(list)
+    for u, v in edges:
+        graph[u].append(v)
+        graph[v].append(u)
+
+    visited = {}    # node → component_id
+    component_id = 0
+
+    def dfs(node, cid):
+        visited[node] = cid
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                dfs(neighbor, cid)
+
+    for node in range(n):
+        if node not in visited:
+            dfs(node, component_id)
+            component_id += 1
+
+    return component_id, visited    # count, node→component mapping
+```
+
+### Union-Find Approach
+
+```python
+class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank   = [0] * n
+        self.count  = n             # track component count
+
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])  # path compression
+        return self.parent[x]
+
+    def union(self, x, y):
+        px, py = self.find(x), self.find(y)
+        if px == py:
+            return False            # already in same component
+        if self.rank[px] < self.rank[py]:
+            px, py = py, px
+        self.parent[py] = px
+        if self.rank[px] == self.rank[py]:
+            self.rank[px] += 1
+        self.count -= 1             # merged two components
+        return True
+
+    def connected(self, x, y):
+        return self.find(x) == self.find(y)
+
+def count_components_uf(n, edges):
+    uf = UnionFind(n)
+    for u, v in edges:
+        uf.union(u, v)
+    return uf.count
+
+print(count_components_uf(5, [(0,1),(1,2),(3,4)]))  # 2
+```
+
+### Largest Component
+
+```python
+def largest_component(graph, n):
+    visited = set()
+
+    def dfs_size(node):
+        visited.add(node)
+        size = 1
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                size += dfs_size(neighbor)
+        return size
+
+    return max(dfs_size(i) for i in range(n) if i not in visited)
+```
+
+### Key Interview Points
+- Union-Find is best for **dynamic edge additions** (online connectivity queries).
+- BFS/DFS is better when you also need to **identify which nodes** are in each component.
+- Always iterate over **all nodes** — don't assume the graph is connected.
+
+---
+
+## Cycle Detection
+
+### Undirected Graph — DFS with Parent Tracking
+
+```python
+def has_cycle_undirected(n, edges):
+    graph = defaultdict(list)
+    for u, v in edges:
+        graph[u].append(v)
+        graph[v].append(u)
+
+    visited = set()
+
+    def dfs(node, parent):
+        visited.add(node)
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                if dfs(neighbor, node):
+                    return True
+            elif neighbor != parent:    # visited AND not parent → back edge → CYCLE
+                return True
+        return False
+
+    for node in range(n):
+        if node not in visited:
+            if dfs(node, -1):
+                return True
+    return False
+```
+
+### Undirected Graph — Union-Find
+
+```python
+def has_cycle_undirected_uf(n, edges):
+    uf = UnionFind(n)
+    for u, v in edges:
+        if not uf.union(u, v):  # already connected → adding edge = cycle
+            return True
+    return False
+```
+
+### Directed Graph — DFS with 3-Color Marking
+
+```python
+# WHITE=0: unvisited, GRAY=1: in current DFS stack, BLACK=2: fully processed
+def has_cycle_directed(n, edges):
+    graph = defaultdict(list)
+    for u, v in edges:
+        graph[u].append(v)
+
+    color = [0] * n     # all WHITE initially
+
+    def dfs(node):
+        color[node] = 1     # GRAY — on current path
+        for neighbor in graph[node]:
+            if color[neighbor] == 1:
+                return True     # back edge to GRAY node → cycle
+            if color[neighbor] == 0:
+                if dfs(neighbor):
+                    return True
+        color[node] = 2     # BLACK — done
+        return False
+
+    for i in range(n):
+        if color[i] == 0:
+            if dfs(i):
+                return True
+    return False
+```
+
+### Directed Graph — Kahn's BFS
+
+```python
+def has_cycle_kahn(n, edges):
+    graph = defaultdict(list)
+    in_degree = [0] * n
+
+    for u, v in edges:
+        graph[u].append(v)
+        in_degree[v] += 1
+
+    queue = deque([i for i in range(n) if in_degree[i] == 0])
+    processed = 0
+
+    while queue:
+        node = queue.popleft()
+        processed += 1
+        for neighbor in graph[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+
+    return processed != n   # True → cycle exists
+```
+
+### Cycle Detection — Which to Use?
+
+| Scenario | Recommended |
+|---|---|
+| Undirected, simple | Union-Find |
+| Undirected, need cycle path | DFS + parent |
+| Directed | DFS 3-color |
+| Directed + want topo order | Kahn's BFS |
+
+---
+
+## Topological Sort
+
+### Concept
+- Linear ordering of nodes where for every directed edge u→v, **u appears before v**.
+- Only valid for **DAGs** (Directed Acyclic Graphs).
+- Not unique — multiple valid orderings may exist.
+
+### DFS-based Topological Sort
+
+```python
+def topo_sort_dfs(n, edges):
+    graph = defaultdict(list)
+    for u, v in edges:
+        graph[u].append(v)
+
+    visited   = set()
+    rec_stack = set()
+    order     = []
+    has_cycle = [False]
+
+    def dfs(node):
+        visited.add(node)
+        rec_stack.add(node)
+
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                dfs(neighbor)
+            elif neighbor in rec_stack:
+                has_cycle[0] = True
+                return
+
+        rec_stack.discard(node)
+        order.append(node)          # add AFTER processing all neighbors
+
+    for i in range(n):
+        if i not in visited:
+            dfs(i)
+
+    if has_cycle[0]:
+        return []
+    return order[::-1]              # reverse post-order = topological order
+```
+
+### Kahn's Algorithm — BFS-based (most interview-friendly)
+
+```python
+# LC 207/210 — Course Schedule pattern
+def kahn_topo_sort(n, prerequisites):
+    graph     = defaultdict(list)
+    in_degree = [0] * n
+
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        in_degree[course] += 1
+
+    # Start with all nodes that have no prerequisites
+    queue = deque([i for i in range(n) if in_degree[i] == 0])
+    order = []
+
+    while queue:
+        node = queue.popleft()
+        order.append(node)
+
+        for neighbor in graph[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:    # all prereqs satisfied
+                queue.append(neighbor)
+
+    return order if len(order) == n else []
+
+# Example — LC 210
+n = 4
+prereqs = [(1,0),(2,0),(3,1),(3,2)]
+print(kahn_topo_sort(n, prereqs))  # [0, 1, 2, 3] or [0, 2, 1, 3]
+```
+
+### Topological Sort with Lexicographic Ordering
+
+```python
+import heapq
+
+def topo_sort_lexicographic(n, edges):
+    graph     = defaultdict(list)
+    in_degree = [0] * n
+
+    for u, v in edges:
+        graph[u].append(v)
+        in_degree[v] += 1
+
+    heap = [i for i in range(n) if in_degree[i] == 0]
+    heapq.heapify(heap)
+    order = []
+
+    while heap:
+        node = heapq.heappop(heap)
+        order.append(node)
+        for neighbor in graph[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                heapq.heappush(heap, neighbor)
+
+    return order if len(order) == n else []
+```
+
+### Key Interview Points
+- Kahn's is easier to explain and implement — **prefer it in interviews**.
+- DFS-based: append node **after** visiting all descendants, then **reverse**.
+- If `len(order) != n` → cycle exists → no valid topological ordering.
+
+---
+
+## Strongly Connected Components (SCC)
+
+### Concept
+- SCC = maximal subgraph where **every node can reach every other node**.
+- Only meaningful for **directed graphs**.
+- Two main algorithms: **Kosaraju's** (2-pass DFS) and **Tarjan's** (1-pass DFS).
+
+### Kosaraju's Algorithm
+
+```python
+# Step 1: DFS on original graph, record finish order (post-order)
+# Step 2: Transpose graph (reverse all edges)
+# Step 3: DFS on transposed graph in reverse finish order
+
+def kosaraju(n, edges):
+    graph   = defaultdict(list)
+    reverse = defaultdict(list)
+
+    for u, v in edges:
+        graph[u].append(v)
+        reverse[v].append(u)       # reversed edge
+
+    # Step 1: DFS on original → get finish order
+    visited = set()
+    finish_order = []
+
+    def dfs1(node):
+        visited.add(node)
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                dfs1(neighbor)
+        finish_order.append(node)  # post-order
+
+    for i in range(n):
+        if i not in visited:
+            dfs1(i)
+
+    # Step 2: DFS on reversed graph in reverse finish order
+    visited.clear()
+    sccs = []
+
+    def dfs2(node, component):
+        visited.add(node)
+        component.append(node)
+        for neighbor in reverse[node]:
+            if neighbor not in visited:
+                dfs2(neighbor, component)
+
+    for node in reversed(finish_order):
+        if node not in visited:
+            component = []
+            dfs2(node, component)
+            sccs.append(component)
+
+    return sccs
+
+# Example
+n = 5
+edges = [(0,1),(1,2),(2,0),(1,3),(3,4)]
+print(kosaraju(n, edges))
+# [[0,2,1], [3], [4]] — 3 SCCs
+```
+
+### Tarjan's Algorithm
+
+```python
+# Uses discovery time + low-link values + stack
+def tarjan_scc(n, edges):
+    graph = defaultdict(list)
+    for u, v in edges:
+        graph[u].append(v)
+
+    disc     = [-1] * n
+    low      = [0]  * n
+    on_stack = [False] * n
+    stack    = []
+    timer    = [0]
+    sccs     = []
+
+    def dfs(node):
+        disc[node] = low[node] = timer[0]
+        timer[0] += 1
+        stack.append(node)
+        on_stack[node] = True
+
+        for neighbor in graph[node]:
+            if disc[neighbor] == -1:            # tree edge
+                dfs(neighbor)
+                low[node] = min(low[node], low[neighbor])
+            elif on_stack[neighbor]:            # back edge (in current SCC)
+                low[node] = min(low[node], disc[neighbor])
+
+        # Root of SCC — pop all nodes in this SCC
+        if low[node] == disc[node]:
+            scc = []
+            while True:
+                w = stack.pop()
+                on_stack[w] = False
+                scc.append(w)
+                if w == node:
+                    break
+            sccs.append(scc)
+
+    for i in range(n):
+        if disc[i] == -1:
+            dfs(i)
+
+    return sccs
+```
+
+### Kosaraju vs Tarjan
+
+| | Kosaraju | Tarjan |
+|---|---|---|
+| Passes | 2 DFS passes | 1 DFS pass |
+| Space | O(V+E) × 2 graphs | O(V+E) + stack |
+| Simplicity | Easier to explain | Harder to implement |
+| Time | O(V+E) | O(V+E) |
+| Interview pick | ✅ Preferred to explain | Use if asked for optimized |
+
+### Key Interview Points
+- **Kosaraju in interviews**: easy 3-step explanation — original DFS → transpose → reverse DFS.
+- Condensation graph (DAG of SCCs) = always a DAG, enabling topological sort.
+- Tarjan's: node is SCC root when `low[node] == disc[node]`.
+
+---
+
+### Traversal Master Cheat Sheet
+
+```
+WHICH TRAVERSAL TO USE?
+├── Need shortest path (unweighted)?         → BFS
+├── Need path existence / explore all?       → DFS
+├── Level-by-level processing?               → BFS (snapshot queue size)
+├── Detect cycle in undirected?              → Union-Find or DFS+parent
+├── Detect cycle in directed?                → DFS 3-color or Kahn's
+├── Task ordering / scheduling?              → Topological Sort (Kahn's)
+├── Find all strongly connected groups?      → Kosaraju or Tarjan
+└── Dynamic connectivity queries?            → Union-Find
+
+COMMON MISTAKES
+├── Forgetting to handle disconnected graphs (loop all nodes)
+├── Marking visited on DEQUEUE not ENQUEUE (BFS duplicates)
+├── Using plain list.pop(0) instead of deque.popleft()
+├── Forgetting parent check in undirected cycle detection
+├── Using cycle detection for undirected on directed graphs
+└── Not reversing post-order in DFS-based topological sort
+```
+
+---
+
+# Shortest Path
+
+---
+
+## Dijkstra's Algorithm
+
+### Concept
+- **Single-source shortest path** for graphs with **non-negative weights**.
+- Greedy approach — always process the node with the **smallest known distance** first.
+- Uses a **min-heap** (priority queue).
+- Time: **O((V + E) log V)** | Space: **O(V)**
+
+> **Core Intuition:** "Among all unvisited nodes, pick the closest one. Its distance is now finalized — no shorter path can exist because all weights are non-negative."
+
+### Standard Dijkstra
+
+```python
+import heapq
+from collections import defaultdict
+
+def dijkstra(graph, start, n):
+    dist = [float('inf')] * n
+    dist[start] = 0
+    min_heap = [(0, start)]     # (distance, node)
+
+    while min_heap:
+        d, node = heapq.heappop(min_heap)
+
+        # Stale entry — a shorter path was already found
+        if d > dist[node]:
+            continue
+
+        for neighbor, weight in graph[node]:
+            new_dist = dist[node] + weight
+            if new_dist < dist[neighbor]:
+                dist[neighbor] = new_dist
+                heapq.heappush(min_heap, (new_dist, neighbor))
+
+    return dist     # dist[i] = inf means node i is unreachable
+
+# Build graph and run
+graph = defaultdict(list)
+edges = [(0,1,4),(0,2,1),(2,1,2),(1,3,1),(2,3,5)]
+for u, v, w in edges:
+    graph[u].append((v, w))
+    graph[v].append((u, w))
+
+print(dijkstra(graph, 0, 4))
+# [0, 3, 1, 4]
+```
+
+### Dijkstra with Path Reconstruction
+
+```python
+def dijkstra_with_path(graph, start, end, n):
+    dist = [float('inf')] * n
+    dist[start] = 0
+    prev = [-1] * n             # predecessor array
+    min_heap = [(0, start)]
+
+    while min_heap:
+        d, node = heapq.heappop(min_heap)
+        if d > dist[node]:
+            continue
+
+        if node == end:
+            break
+
+        for neighbor, weight in graph[node]:
+            new_dist = dist[node] + weight
+            if new_dist < dist[neighbor]:
+                dist[neighbor] = new_dist
+                prev[neighbor] = node
+                heapq.heappush(min_heap, (new_dist, neighbor))
+
+    # Reconstruct path by walking back through prev[]
+    path = []
+    curr = end
+    while curr != -1:
+        path.append(curr)
+        curr = prev[curr]
+
+    return dist[end], path[::-1]    # (cost, path)
+```
+
+### Dijkstra on Grid
+
+```python
+# LC 1631 — Path with Minimum Effort
+def minimum_effort_path(heights):
+    rows, cols = len(heights), len(heights[0])
+    dist = [[float('inf')] * cols for _ in range(rows)]
+    dist[0][0] = 0
+    min_heap = [(0, 0, 0)]      # (effort, row, col)
+    directions = [(0,1),(0,-1),(1,0),(-1,0)]
+
+    while min_heap:
+        effort, r, c = heapq.heappop(min_heap)
+
+        if r == rows-1 and c == cols-1:
+            return effort
+
+        if effort > dist[r][c]:
+            continue
+
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols:
+                new_effort = max(effort, abs(heights[nr][nc] - heights[r][c]))
+                if new_effort < dist[nr][nc]:
+                    dist[nr][nc] = new_effort
+                    heapq.heappush(min_heap, (new_effort, nr, nc))
+
+    return dist[rows-1][cols-1]
+```
+
+### Dijkstra with State (advanced)
+
+```python
+# LC 787 — Cheapest flights within K stops
+def find_cheapest_price(n, flights, src, dst, k):
+    graph = defaultdict(list)
+    for u, v, w in flights:
+        graph[u].append((v, w))
+
+    dist = [[float('inf')] * (k + 2) for _ in range(n)]
+    dist[src][k + 1] = 0
+    min_heap = [(0, src, k + 1)]    # (cost, node, stops_left)
+
+    while min_heap:
+        cost, node, stops = heapq.heappop(min_heap)
+
+        if node == dst:
+            return cost
+        if stops == 0:
+            continue
+
+        if cost > dist[node][stops]:
+            continue
+
+        for neighbor, weight in graph[node]:
+            new_cost = cost + weight
+            if new_cost < dist[neighbor][stops - 1]:
+                dist[neighbor][stops - 1] = new_cost
+                heapq.heappush(min_heap, (new_cost, neighbor, stops - 1))
+
+    return -1
+```
+
+### Key Interview Points
+- **Fails with negative weights** — always flag this, suggest Bellman-Ford.
+- The `if d > dist[node]: continue` guard handles stale heap entries — crucial.
+- For state-space Dijkstra: encode full state in heap tuple `(cost, node, extra_state)`.
+
+---
+
+## Bellman-Ford
+
+### Concept
+- **Single-source shortest path** supporting **negative weight edges**.
+- Detects **negative weight cycles**.
+- Relaxes ALL edges **V-1 times**.
+- Time: **O(V × E)** | Space: **O(V)**
+
+> **Core Intuition:** "After k relaxations, dist[v] = shortest path using at most k edges. After V-1 relaxations, all shortest paths are found. If we can still relax on the Vth pass → negative cycle."
+
+### Standard Bellman-Ford
+
+```python
+def bellman_ford(n, edges, start):
+    # edges = list of (u, v, weight)
+    dist = [float('inf')] * n
+    dist[start] = 0
+
+    # Relax all edges exactly V-1 times
+    for i in range(n - 1):
+        updated = False
+        for u, v, w in edges:
+            if dist[u] != float('inf') and dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+                updated = True
+        if not updated:
+            break
+
+    # V-th relaxation — check for negative weight cycles
+    for u, v, w in edges:
+        if dist[u] != float('inf') and dist[u] + w < dist[v]:
+            return None     # negative cycle detected
+
+    return dist
+```
+
+### SPFA — Shortest Path Faster Algorithm
+
+```python
+# Average case O(E), worst case still O(VE)
+from collections import deque
+
+def spfa(n, edges_dict, start):
+    dist = [float('inf')] * n
+    dist[start] = 0
+    in_queue = [False] * n
+    in_queue[start] = True
+    queue = deque([start])
+    count = [0] * n
+
+    while queue:
+        node = queue.popleft()
+        in_queue[node] = False
+
+        for neighbor, weight in edges_dict[node]:
+            if dist[node] + weight < dist[neighbor]:
+                dist[neighbor] = dist[node] + weight
+                if not in_queue[neighbor]:
+                    queue.append(neighbor)
+                    in_queue[neighbor] = True
+                    count[neighbor] += 1
+                    if count[neighbor] >= n:    # relaxed n times → negative cycle
+                        return None
+
+    return dist
+```
+
+### Dijkstra vs Bellman-Ford
+
+| | Dijkstra | Bellman-Ford |
+|---|---|---|
+| Negative weights | ❌ Fails | ✅ Handles |
+| Negative cycles | ❌ Cannot detect | ✅ Detects |
+| Time complexity | O((V+E) log V) | O(V·E) |
+| Approach | Greedy + heap | DP / relaxation |
+| Best for | Non-negative, sparse | Negative weights, dense |
+
+### Key Interview Points
+- V-1 iterations because the **longest simple path** in a graph with V nodes has V-1 edges.
+- `dist[u] != inf` guard — don't relax from unreachable nodes.
+
+---
+
+## Floyd-Warshall
+
+### Concept
+- **All-pairs shortest path** — finds shortest distance between **every pair** of nodes.
+- DP approach: `dist[i][j]` = shortest path from i to j using only nodes `{0..k}` as intermediaries.
+- Time: **O(V³)** | Space: **O(V²)**
+
+> **Core Intuition:** "For each intermediate node k, check if going through k gives a shorter path from i to j."
+> `dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])`
+
+### Standard Floyd-Warshall
+
+```python
+def floyd_warshall(n, edges):
+    INF = float('inf')
+    dist = [[INF] * n for _ in range(n)]
+
+    for i in range(n):
+        dist[i][i] = 0
+
+    for u, v, w in edges:
+        dist[u][v] = w
+        # dist[v][u] = w   # add for undirected
+
+    # Core DP — try every node k as intermediate
+    for k in range(n):          # intermediate node — MUST be outermost
+        for i in range(n):      # source
+            for j in range(n):  # destination
+                if dist[i][k] + dist[k][j] < dist[i][j]:
+                    dist[i][j] = dist[i][k] + dist[k][j]
+
+    # Check for negative cycles
+    for i in range(n):
+        if dist[i][i] < 0:
+            return None     # negative cycle detected
+
+    return dist
+```
+
+### Floyd-Warshall with Path Reconstruction
+
+```python
+def floyd_warshall_with_path(n, edges):
+    INF = float('inf')
+    dist = [[INF] * n for _ in range(n)]
+    next_node = [[-1] * n for _ in range(n)]
+
+    for i in range(n):
+        dist[i][i] = 0
+
+    for u, v, w in edges:
+        dist[u][v] = w
+        next_node[u][v] = v
+
+    for k in range(n):
+        for i in range(n):
+            for j in range(n):
+                if dist[i][k] + dist[k][j] < dist[i][j]:
+                    dist[i][j] = dist[i][k] + dist[k][j]
+                    next_node[i][j] = next_node[i][k]
+
+    def get_path(u, v):
+        if dist[u][v] == float('inf'):
+            return []
+        path = [u]
+        while u != v:
+            u = next_node[u][v]
+            path.append(u)
+        return path
+
+    return dist, get_path
+```
+
+### Key Interview Points
+- Loop order matters: **k must be outermost** — k represents the set of allowed intermediaries.
+- Negative cycle: `dist[i][i] < 0` after running.
+- Dense graph (E ≈ V²): Floyd-Warshall O(V³) vs V × Dijkstra O(V³ log V) → Floyd wins.
+
+---
+
+## 0-1 BFS
+
+### Concept
+- Shortest path when edge weights are **only 0 or 1**.
+- Uses a **deque**: weight-0 edges → `appendleft` (front), weight-1 edges → `append` (back).
+- Time: **O(V + E)** — no heap needed.
+
+> **Core Intuition:** "A deque acts as a sorted structure when weights are only 0 or 1. Free edges go to the front (process immediately), costly edges go to the back (process later)."
+
+### Standard 0-1 BFS
+
+```python
+from collections import deque
+
+def zero_one_bfs(n, edges, start):
+    graph = defaultdict(list)
+    for u, v, w in edges:
+        graph[u].append((v, w))
+        graph[v].append((u, w))
+
+    dist = [float('inf')] * n
+    dist[start] = 0
+    dq = deque([start])
+
+    while dq:
+        node = dq.popleft()
+
+        for neighbor, weight in graph[node]:
+            new_dist = dist[node] + weight
+            if new_dist < dist[neighbor]:
+                dist[neighbor] = new_dist
+                if weight == 0:
+                    dq.appendleft(neighbor)     # free edge → process ASAP
+                else:
+                    dq.append(neighbor)         # cost edge → process later
+
+    return dist
+```
+
+### 0-1 BFS on Grid
+
+```python
+# LC 1368 — Minimum Cost to Make at Least One Valid Path in a Grid
+def min_cost_grid(grid):
+    rows, cols = len(grid), len(grid[0])
+    # 1=right, 2=left, 3=down, 4=up
+    directions = [(0,1),(0,-1),(1,0),(-1,0)]
+    dir_map = {1:(0,1), 2:(0,-1), 3:(1,0), 4:(-1,0)}
+
+    dist = [[float('inf')] * cols for _ in range(rows)]
+    dist[0][0] = 0
+    dq = deque([(0, 0)])
+
+    while dq:
+        r, c = dq.popleft()
+
+        for i, (dr, dc) in enumerate(directions):
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols:
+                cost = 0 if dir_map[grid[r][c]] == (dr, dc) else 1
+                new_dist = dist[r][c] + cost
+                if new_dist < dist[nr][nc]:
+                    dist[nr][nc] = new_dist
+                    if cost == 0:
+                        dq.appendleft((nr, nc))
+                    else:
+                        dq.append((nr, nc))
+
+    return dist[rows-1][cols-1]
+```
+
+---
+
+### All Shortest Path Algorithms — Master Comparison
+
+| Algorithm | Weights | Time | Space | Use Case |
+|---|---|---|---|---|
+| BFS | Unweighted (all = 1) | O(V+E) | O(V) | Unweighted SSSP |
+| 0-1 BFS | 0 or 1 only | O(V+E) | O(V) | Binary-cost SSSP |
+| Dijkstra | Non-negative | O((V+E)logV) | O(V) | General SSSP |
+| Bellman-Ford | Any (no neg cycle) | O(VE) | O(V) | Negative edges |
+| Floyd-Warshall | Any (no neg cycle) | O(V³) | O(V²) | All-pairs SP |
+| SPFA | Any | O(VE) worst | O(V) | Avg-case BF speedup |
+
+### Decision Tree
+
+```
+SSSP or APSP?
+│
+├── APSP → Floyd-Warshall
+│
+└── SSSP
+      ├── All weights = 1 (unweighted)?      → BFS
+      ├── Weights are only 0 or 1?           → 0-1 BFS
+      ├── All weights non-negative?           → Dijkstra
+      └── Negative weights present?
+            ├── No negative CYCLE?            → Bellman-Ford
+            └── Negative CYCLE?               → Bellman-Ford (detect & report)
+
+COMMON MISTAKES
+├── Using Dijkstra with negative weights → wrong answers silently
+├── Forgetting stale entry guard in Dijkstra (d > dist[node])
+├── Wrong loop order in Floyd-Warshall (k must be outermost)
+├── Not checking dist[u] != inf before relaxing in Bellman-Ford
+└── Using append instead of appendleft for 0-weight in 0-1 BFS
+```
+
+---
+
+# Advanced Graph
+
+---
+
+## Minimum Spanning Tree (MST)
+
+### Concept
+- A **spanning tree** = subgraph connecting all V nodes with exactly **V-1 edges**, no cycles.
+- **MST** = spanning tree with **minimum total edge weight**.
+- Only exists on **connected, undirected, weighted** graphs.
+- MST may not be unique if edge weights are equal.
+
+### Kruskal's Algorithm
+
+```python
+# Core idea: greedily pick cheapest edge that doesn't form a cycle
+# Sort all edges by weight, add edge if it connects two different components
+
+class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank   = [0] * n
+        self.count  = n
+
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
+
+    def union(self, x, y):
+        px, py = self.find(x), self.find(y)
+        if px == py:
+            return False
+        if self.rank[px] < self.rank[py]:
+            px, py = py, px
+        self.parent[py] = px
+        if self.rank[px] == self.rank[py]:
+            self.rank[px] += 1
+        self.count -= 1
+        return True
+
+def kruskal(n, edges):
+    # edges = [(weight, u, v)]
+    edges.sort()                    # sort by weight O(E log E)
+    uf = UnionFind(n)
+    mst_cost  = 0
+    mst_edges = []
+
+    for w, u, v in edges:
+        if uf.union(u, v):
+            mst_cost += w
+            mst_edges.append((u, v, w))
+            if len(mst_edges) == n - 1:
+                break               # MST complete
+
+    if len(mst_edges) < n - 1:
+        return -1, []               # disconnected graph
+
+    return mst_cost, mst_edges
+
+# Example
+n = 4
+edges = [(1,0,1),(3,0,2),(4,0,3),(2,1,2),(5,1,3),(6,2,3)]
+cost, tree = kruskal(n, edges)
+print(cost)     # 7
+```
+
+### Prim's Algorithm
+
+```python
+import heapq
+from collections import defaultdict
+
+def prims(n, edges):
+    graph = defaultdict(list)
+    for u, v, w in edges:
+        graph[u].append((w, v))
+        graph[v].append((w, u))
+
+    visited   = set()
+    min_heap  = [(0, 0, -1)]    # (weight, node, parent)
+    mst_cost  = 0
+    mst_edges = []
+
+    while min_heap and len(visited) < n:
+        w, node, parent = heapq.heappop(min_heap)
+
+        if node in visited:
+            continue
+
+        visited.add(node)
+        mst_cost += w
+        if parent != -1:
+            mst_edges.append((parent, node, w))
+
+        for edge_w, neighbor in graph[node]:
+            if neighbor not in visited:
+                heapq.heappush(min_heap, (edge_w, neighbor, node))
+
+    if len(visited) < n:
+        return -1, []
+
+    return mst_cost, mst_edges
+```
+
+### Maximum Spanning Tree
+
+```python
+# Trick: negate all weights, run Kruskal's/Prim's, negate result back
+def max_spanning_tree(n, edges):
+    negated = [(-w, u, v) for w, u, v in edges]
+    cost, tree = kruskal(n, negated)
+    return -cost, tree
+```
+
+### Kruskal vs Prim's
+
+| | Kruskal's | Prim's |
+|---|---|---|
+| Approach | Edge-based | Node-based |
+| Data Structure | Union-Find | Min-heap |
+| Time | O(E log E) | O(E log V) |
+| Best for | Sparse graphs | Dense graphs |
+| Requires | All edges upfront | Adjacency list |
+
+### Key Interview Points
+- MST is unique when all edge weights are **distinct**.
+- Kruskal: sort first, then union — always mention the sort step.
+- Prim's: mark visited **on pop not push** — heap may have stale entries.
+- Common problems: LC 1584 (Min Cost to Connect Points), LC 1135, LC 1168.
+
+---
+
+## Union-Find (Disjoint Set Union — DSU)
+
+### Concept
+- Tracks which elements belong to the **same component**.
+- Two core operations: `find` (which component?) and `union` (merge two components).
+- With path compression + union by rank: **O(α(n))** per operation ≈ O(1).
+
+### Full Implementation
+
+```python
+class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank   = [0] * n       # tree height upper bound
+        self.size   = [1] * n       # component size
+        self.count  = n             # number of distinct components
+
+    def find(self, x):
+        # Path compression — flatten tree during find
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
+
+    def union(self, x, y):
+        px, py = self.find(x), self.find(y)
+        if px == py:
+            return False            # already connected
+
+        # Union by rank
+        if self.rank[px] < self.rank[py]:
+            px, py = py, px
+        self.parent[py] = px
+        self.size[px] += self.size[py]
+        if self.rank[px] == self.rank[py]:
+            self.rank[px] += 1
+        self.count -= 1
+        return True
+
+    def connected(self, x, y):
+        return self.find(x) == self.find(y)
+
+    def component_size(self, x):
+        return self.size[self.find(x)]
+```
+
+### Weighted Union-Find
+
+```python
+# LC 399 — Evaluate Division
+class WeightedUnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.weight = [1.0] * n     # weight[x] = ratio x / parent[x]
+
+    def find(self, x):
+        if self.parent[x] != x:
+            root = self.find(self.parent[x])
+            self.weight[x] *= self.weight[self.parent[x]]  # update weight
+            self.parent[x]  = root
+        return self.parent[x]
+
+    def union(self, x, y, ratio):
+        px, py = self.find(x), self.find(y)
+        if px == py:
+            return
+        self.parent[px] = py
+        self.weight[px] = ratio * self.weight[y] / self.weight[x]
+
+    def query(self, x, y):
+        px, py = self.find(x), self.find(y)
+        if px != py:
+            return -1.0
+        return self.weight[x] / self.weight[y]
+```
+
+### Classic Problem Patterns
+
+```python
+# Pattern 1: Count connected components
+def count_components(n, edges):
+    uf = UnionFind(n)
+    for u, v in edges:
+        uf.union(u, v)
+    return uf.count
+
+# Pattern 2: Detect cycle in undirected graph
+def has_cycle(n, edges):
+    uf = UnionFind(n)
+    for u, v in edges:
+        if not uf.union(u, v):  # already connected → cycle
+            return True
+    return False
+
+# Pattern 3: Largest component size
+def largest_component(n, edges):
+    uf = UnionFind(n)
+    for u, v in edges:
+        uf.union(u, v)
+    return max(uf.component_size(i) for i in range(n))
+
+# Pattern 4: Number of islands with Union-Find (LC 200)
+def num_islands_uf(grid):
+    if not grid:
+        return 0
+    rows, cols = len(grid), len(grid[0])
+    uf = UnionFind(rows * cols)
+    count = 0
+
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == '1':
+                count += 1
+                for dr, dc in [(0,1),(1,0)]:    # only right + down to avoid duplicates
+                    nr, nc = r + dr, c + dc
+                    if (0 <= nr < rows and 0 <= nc < cols
+                            and grid[nr][nc] == '1'):
+                        if uf.union(r * cols + c, nr * cols + nc):
+                            count -= 1
+
+    return count
+```
+
+### Rollback Union-Find
+
+```python
+# Used when you need to UNDO unions (offline problems)
+class RollbackUnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank   = [0] * n
+        self.history = []           # stack of saved states
+
+    def find(self, x):              # NO path compression — needed for rollback
+        while self.parent[x] != x:
+            x = self.parent[x]
+        return x
+
+    def union(self, x, y):
+        px, py = self.find(x), self.find(y)
+        if px == py:
+            self.history.append(None)
+            return False
+        if self.rank[px] < self.rank[py]:
+            px, py = py, px
+        self.history.append((py, self.parent[py], px, self.rank[px]))
+        self.parent[py] = px
+        if self.rank[px] == self.rank[py]:
+            self.rank[px] += 1
+        return True
+
+    def rollback(self):
+        entry = self.history.pop()
+        if entry is None:
+            return
+        py, old_py_parent, px, old_px_rank = entry
+        self.parent[py] = old_py_parent
+        self.rank[px]   = old_px_rank
+```
+
+### Key Interview Points
+- **Always use both** path compression + union by rank — never just one.
+- `find` returns the **root/representative** of the component.
+- Use `size[]` (not `rank[]`) when you need actual component sizes.
+- Union-Find **cannot** delete edges — use BFS/DFS or offline algorithms for that.
+
+---
+
+## Bipartite Graph Check
+
+### Concept
+- A graph is **bipartite** if nodes can be split into **two sets** (A, B) such that every edge connects A to B.
+- Equivalent to: graph is **2-colorable** — no odd-length cycles.
+
+### BFS 2-Coloring
+
+```python
+from collections import deque
+
+def is_bipartite_bfs(graph, n):
+    color = [-1] * n        # -1 = unvisited, 0 = group A, 1 = group B
+
+    for start in range(n):
+        if color[start] != -1:
+            continue
+
+        queue = deque([start])
+        color[start] = 0
+
+        while queue:
+            node = queue.popleft()
+            for neighbor in graph[node]:
+                if color[neighbor] == -1:
+                    color[neighbor] = 1 - color[node]   # flip color
+                    queue.append(neighbor)
+                elif color[neighbor] == color[node]:
+                    return False    # same color → NOT bipartite
+
+    return True
+
+# Square → bipartite
+graph = defaultdict(list)
+for u, v in [(0,1),(1,2),(2,3),(3,0)]:
+    graph[u].append(v)
+    graph[v].append(u)
+print(is_bipartite_bfs(graph, 4))   # True
+
+# Triangle → NOT bipartite (odd cycle)
+graph2 = defaultdict(list)
+for u, v in [(0,1),(1,2),(2,0)]:
+    graph2[u].append(v)
+    graph2[v].append(u)
+print(is_bipartite_bfs(graph2, 3))  # False
+```
+
+### DFS 2-Coloring
+
+```python
+def is_bipartite_dfs(graph, n):
+    color = [-1] * n
+
+    def dfs(node, c):
+        color[node] = c
+        for neighbor in graph[node]:
+            if color[neighbor] == -1:
+                if not dfs(neighbor, 1 - c):
+                    return False
+            elif color[neighbor] == c:      # conflict
+                return False
+        return True
+
+    for i in range(n):
+        if color[i] == -1:
+            if not dfs(i, 0):
+                return False
+    return True
+```
+
+### Union-Find Bipartite Check
+
+```python
+def is_bipartite_uf(graph, n):
+    uf = UnionFind(2 * n)       # node i and its "opposite" = node i+n
+
+    for node in range(n):
+        for neighbor in graph[node]:
+            if uf.connected(node, neighbor):
+                return False    # node and neighbor in same group → conflict
+            uf.union(node + n, neighbor)
+            uf.union(node, neighbor + n)
+
+    return True
+```
+
+### Common Problem Patterns
+
+```python
+# LC 785 — Is Graph Bipartite?
+def is_bipartite_lc(graph):
+    n = len(graph)
+    color = [-1] * n
+
+    for start in range(n):
+        if color[start] != -1:
+            continue
+        queue = deque([start])
+        color[start] = 0
+        while queue:
+            node = queue.popleft()
+            for neighbor in graph[node]:
+                if color[neighbor] == -1:
+                    color[neighbor] = 1 - color[node]
+                    queue.append(neighbor)
+                elif color[neighbor] == color[node]:
+                    return False
+    return True
+
+# LC 886 — Possible Bipartition
+def possible_bipartition(n, dislikes):
+    graph = defaultdict(list)
+    for u, v in dislikes:
+        graph[u].append(v)
+        graph[v].append(u)
+
+    color = {}
+
+    def dfs(node, c):
+        color[node] = c
+        for neighbor in graph[node]:
+            if neighbor in color:
+                if color[neighbor] == c:
+                    return False
+            else:
+                if not dfs(neighbor, 1 - c):
+                    return False
+        return True
+
+    for person in range(1, n + 1):
+        if person not in color:
+            if not dfs(person, 0):
+                return False
+    return True
+
+# Maximum Bipartite Matching — Augmenting paths
+def max_bipartite_matching(graph, left_nodes, right_nodes):
+    match_left  = {}
+    match_right = {}
+
+    def dfs(left, visited):
+        for right in graph[left]:
+            if right in visited:
+                continue
+            visited.add(right)
+            if right not in match_right or dfs(match_right[right], visited):
+                match_left[left]   = right
+                match_right[right] = left
+                return True
+        return False
+
+    count = 0
+    for left in left_nodes:
+        visited = set()
+        if dfs(left, visited):
+            count += 1
+    return count
+```
+
+### Key Interview Points
+- Bipartite ↔ **no odd-length cycles** — say this in interviews.
+- Always iterate over **all nodes** — graph may be disconnected.
+- `1 - color` is the elegant flip: `1-0=1`, `1-1=0` — no if/else needed.
+- Directed graphs: check bipartiteness on **underlying undirected graph**.
+
+---
+
+## Graph Coloring
+
+### Concept
+- Assign **colors to nodes** such that no two **adjacent nodes share the same color**.
+- **Chromatic number χ(G)** = minimum colors needed.
+- General graph coloring is **NP-hard** — focus on greedy and specific cases in interviews.
+
+### Greedy Graph Coloring
+
+```python
+def greedy_coloring(graph, n):
+    color = [-1] * n
+
+    for node in range(n):
+        neighbor_colors = set()
+        for neighbor in graph[node]:
+            if color[neighbor] != -1:
+                neighbor_colors.add(color[neighbor])
+
+        # Assign smallest available color
+        c = 0
+        while c in neighbor_colors:
+            c += 1
+        color[node] = c
+
+    num_colors = max(color) + 1
+    return color, num_colors
+```
+
+### Welsh-Powell Algorithm (greedy + degree ordering)
+
+```python
+def welsh_powell(graph, n):
+    # Sort nodes by degree descending
+    nodes = sorted(range(n),
+                   key=lambda x: len(graph[x]),
+                   reverse=True)
+    color = [-1] * n
+
+    for node in nodes:
+        neighbor_colors = {color[nb] for nb in graph[node] if color[nb] != -1}
+        c = 0
+        while c in neighbor_colors:
+            c += 1
+        color[node] = c
+
+    return color, max(color) + 1
+```
+
+### 3-Coloring via Backtracking (NP-hard, exponential)
+
+```python
+def can_color(graph, n, k):
+    color = [-1] * n
+
+    def is_valid(node, c):
+        return all(color[nb] != c for nb in graph[node])
+
+    def backtrack(node):
+        if node == n:
+            return True
+        for c in range(k):
+            if is_valid(node, c):
+                color[node] = c
+                if backtrack(node + 1):
+                    return True
+                color[node] = -1    # backtrack
+        return False
+
+    return backtrack(0), color
+```
+
+### Special Cases — Known Chromatic Numbers
+
+```python
+# Bipartite graph → χ = 2 (if at least one edge)
+def chromatic_bipartite(graph, n):
+    return 2 if any(graph[i] for i in range(n)) else 1
+
+# Complete graph Kn → χ = n
+def chromatic_complete(n):
+    return n
+
+# Cycle graph Cn → χ = 2 if n even, 3 if n odd
+def chromatic_cycle(n):
+    return 2 if n % 2 == 0 else 3
+
+# Tree → always χ = 2 (trees are bipartite — no odd cycles)
+def chromatic_tree():
+    return 2
+
+# Planar graph → χ ≤ 4  (Four Color Theorem)
+```
+
+### Interview Problem Patterns
+
+```python
+# Pattern 1: Minimum exam slots (no conflicting courses in same slot)
+def min_exam_slots(n, conflicts):
+    graph = defaultdict(list)
+    for u, v in conflicts:
+        graph[u].append(v)
+        graph[v].append(u)
+    _, k = welsh_powell(graph, n)
+    return k
+
+# Pattern 2: Register allocation (variables live at same time → different registers)
+def min_registers(n, interferences):
+    graph = defaultdict(list)
+    for u, v in interferences:
+        graph[u].append(v)
+        graph[v].append(u)
+    _, k = greedy_coloring(graph, n)
+    return k
+```
+
+### Edge Coloring
+
+```python
+# Color EDGES such that no two adjacent edges (sharing a node) share a color
+# Vizing's theorem: χ'(G) = Δ or Δ+1  (Δ = max degree)
+
+def greedy_edge_coloring(n, edges):
+    edge_color = {}
+    node_used_colors = defaultdict(set)
+
+    for u, v in edges:
+        forbidden = node_used_colors[u] | node_used_colors[v]
+        c = 0
+        while c in forbidden:
+            c += 1
+        edge_color[(u, v)] = c
+        node_used_colors[u].add(c)
+        node_used_colors[v].add(c)
+
+    return edge_color
+```
+
+---
+
+### Advanced Graph Master Cheat Sheet
+
+```
+ALGORITHM SELECTION
+
+Spanning Tree:
+├── Sparse graph?                            → Kruskal's (sort + Union-Find)
+├── Dense graph?                             → Prim's (min-heap)
+└── Maximum spanning tree?                   → Negate weights, run either
+
+Connectivity:
+├── Static graph, one-time query?            → BFS/DFS
+├── Dynamic edges, repeated queries?         → Union-Find
+├── Need rollback (offline)?                 → Rollback DSU (rank only)
+└── Weighted relationships?                  → Weighted Union-Find
+
+Bipartite / Coloring:
+├── Is graph 2-colorable?                    → BFS/DFS 2-coloring
+├── Minimum colors, exact (small graph)?     → Backtracking k-coloring
+└── Minimum colors, approximate?             → Welsh-Powell greedy
+
+KEY THEOREMS TO KNOW:
+├── Bipartite ↔ no odd cycles ↔ 2-colorable
+├── Tree → always bipartite (χ=2)
+├── Kn (complete) → χ=n
+├── Planar graph → χ ≤ 4  (Four Color Theorem)
+├── Vizing's theorem: χ'(G) ∈ {Δ, Δ+1}
+└── König's theorem: in bipartite, max matching = min vertex cover
+
+COMMON MISTAKES:
+├── MST: Prim's marks visited on POP not push (stale heap entries)
+├── Union-Find: forgetting path compression → O(log n) not O(α(n))
+├── Bipartite: not handling disconnected graphs (loop all nodes)
+├── Coloring: greedy result depends on ordering — not always optimal
+└── MST: assuming MST is unique (only unique when all weights distinct)
+```
+
+---
+
+# 📚 Interview Notes — Recursion, Combinatorics, Backtracking & Optimization (Python)
+
+---
+
+# 🔁 Recursion Basics
+
+## 📌 What is Recursion?
+
+A function that **calls itself** to solve a smaller subproblem, until it reaches a stopping condition.
+
+**Two mandatory parts:**
+- **Base case** → stops the recursion
+- **Recursive case** → breaks problem into smaller version of itself
+
+> ⚠️ **Interview tip:** Always mention: *"Without a base case, recursion leads to infinite calls and a `RecursionError: maximum recursion depth exceeded`"*
+
+Python's default recursion limit is **1000** — you can check/change it:
+
+```python
+import sys
+sys.getrecursionlimit()      # 1000
+sys.setrecursionlimit(2000)  # change it
+```
+
+---
+
+## 1. 🛑 Base Case / Recursive Case
+
+The **base case** is the simplest input where the answer is known directly — no further recursion needed.
+The **recursive case** reduces the problem toward the base case.
+
+```python
+def countdown(n):
+    if n <= 0:          # base case
+        print("Done!")
+    else:               # recursive case
+        print(n)
+        countdown(n - 1)
+```
+
+**Call stack visualization for countdown(3):**
+
+```
+countdown(3) → prints 3 → calls countdown(2)
+  countdown(2) → prints 2 → calls countdown(1)
+    countdown(1) → prints 1 → calls countdown(0)
+      countdown(0) → prints "Done!" ← base case hit
+```
+
+> 🎯 **Interview tip:** Be ready to trace the **call stack** manually. Interviewers love asking *"what happens step by step?"*
+
+---
+
+## 2. ➕ Factorial
+
+`n! = n × (n-1) × (n-2) × ... × 1`, and `0! = 1`
+
+**Recursive definition:**
+- Base case: `factorial(0) = 1`
+- Recursive case: `factorial(n) = n * factorial(n-1)`
+
+```python
+def factorial(n):
+    if n < 0:
+        raise ValueError("Negative input not allowed")
+    if n == 0:          # base case
+        return 1
+    return n * factorial(n - 1)   # recursive case
+
+print(factorial(5))  # 120
+```
+
+**Call stack for factorial(4):**
+
+```
+factorial(4) = 4 * factorial(3)
+                   3 * factorial(2)
+                       2 * factorial(1)
+                           1 * factorial(0)
+                                   1       ← base case
+# Unwinding:
+# 1*1=1, 2*1=2, 3*2=6, 4*6=24
+```
+
+**Tail-recursive style** (Python doesn't optimize it, but good to mention):
+
+```python
+def factorial_tail(n, accumulator=1):
+    if n == 0:
+        return accumulator
+    return factorial_tail(n - 1, n * accumulator)
+```
+
+> 🎯 **Interview tips:**
+> - Time: **O(n)**, Space: **O(n)** call stack
+> - Mention **tail recursion** and that Python doesn't do TCO (Tail Call Optimization)
+> - Iterative version is more memory-efficient for large `n`
+
+---
+
+## 3. 🌀 Fibonacci
+
+`fib(n) = fib(n-1) + fib(n-2)`, with `fib(0)=0`, `fib(1)=1`
+
+### Naive Recursive (⚠️ exponential time):
+
+```python
+def fib(n):
+    if n <= 1:              # base case
+        return n
+    return fib(n-1) + fib(n-2)   # recursive case
+
+print(fib(6))  # 8
+```
+
+**Problem:** `fib(5)` computes `fib(3)` **twice**, `fib(2)` **three times** — exponential overlap.
+- Time: **O(2ⁿ)**, Space: **O(n)**
+
+### Memoized (Top-Down DP) — ✅ Preferred in interviews:
+
+```python
+def fib_memo(n, memo={}):
+    if n <= 1:
+        return n
+    if n not in memo:
+        memo[n] = fib_memo(n-1, memo) + fib_memo(n-2, memo)
+    return memo[n]
+
+# Cleaner with lru_cache:
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def fib_cached(n):
+    if n <= 1:
+        return n
+    return fib_cached(n-1) + fib_cached(n-2)
+```
+
+- Time: **O(n)**, Space: **O(n)**
+
+### Bottom-Up DP (most optimal, no recursion):
+
+```python
+def fib_dp(n):
+    if n <= 1:
+        return n
+    a, b = 0, 1
+    for _ in range(2, n+1):
+        a, b = b, a + b
+    return b
+```
+
+- Time: **O(n)**, Space: **O(1)**
+
+> 🎯 **Interview tips:**
+> - Start by explaining the naive approach and its flaw (overlapping subproblems)
+> - Then propose memoization → show you understand DP
+> - Mention `@lru_cache` as a Pythonic solution
+> - Know all 3 versions cold — interviewers often ask to optimize iteratively
+
+---
+
+## 4. 🗼 Tower of Hanoi
+
+Move `n` disks from source peg to destination peg using an auxiliary peg.
+
+**Rules:**
+1. Only one disk moved at a time
+2. A larger disk cannot be placed on a smaller disk
+3. Use 3 pegs: `src`, `aux`, `dst`
+
+**Recursive logic:**
+1. Move top `n-1` disks from `src → aux` (using `dst`)
+2. Move bottom disk from `src → dst`
+3. Move `n-1` disks from `aux → dst` (using `src`)
+
+```python
+def hanoi(n, src='A', dst='C', aux='B'):
+    if n == 1:                          # base case
+        print(f"Move disk 1: {src} → {dst}")
+        return
+    hanoi(n-1, src, aux, dst)           # step 1
+    print(f"Move disk {n}: {src} → {dst}")  # step 2
+    hanoi(n-1, aux, dst, src)           # step 3
+
+hanoi(3)
+# Move disk 1: A → C
+# Move disk 2: A → B
+# Move disk 1: C → B
+# Move disk 3: A → C
+# Move disk 1: B → A
+# Move disk 2: B → C
+# Move disk 1: A → C
+```
+
+**Total moves for `n` disks = 2ⁿ − 1**
+- 3 disks → 7 moves, 4 disks → 15 moves
+
+> 🎯 **Interview tips:**
+> - Time: **O(2ⁿ)**, Space: **O(n)** (call stack depth)
+> - The key insight: *"trust the recursion"* — solve `n-1` correctly, then handle `n`
+> - Common follow-up: *"how many moves for n disks?"* → `2ⁿ - 1`
+
+---
+
+## 5. ⚡ Power Calculation
+
+`power(base, exp)` = base raised to exp
+
+### Naive — O(n):
+
+```python
+def power_naive(base, exp):
+    if exp == 0:        # base case
+        return 1
+    return base * power_naive(base, exp - 1)
+```
+
+### Fast Exponentiation (Exponentiation by Squaring) — ✅ O(log n):
+
+```python
+def power(base, exp):
+    if exp == 0:                        # base case
+        return 1
+    if exp % 2 == 0:                    # even exponent
+        half = power(base, exp // 2)
+        return half * half
+    else:                               # odd exponent
+        return base * power(base, exp - 1)
+
+print(power(2, 10))  # 1024
+```
+
+**Trace for power(2, 8):**
+
+```
+power(2,8) → half = power(2,4) → half = power(2,2) → half = power(2,1)
+  power(2,1) = 2 * power(2,0) = 2*1 = 2
+  power(2,2) = 2*2 = 4
+  power(2,4) = 4*4 = 16
+  power(2,8) = 16*16 = 256
+```
+
+> 🎯 **Interview tips:**
+> - Naive is O(n), fast version is **O(log n)** — always push for the optimized version
+> - Handle negative exponents: `power(base, -exp)` → `1 / power(base, exp)`
+> - Python has `pow(base, exp, mod)` built-in for modular exponentiation
+
+---
+
+## 6. 📦 Array Recursion
+
+### Sum of array:
+
+```python
+def arr_sum(arr, i=0):
+    if i == len(arr):       # base case: past end
+        return 0
+    return arr[i] + arr_sum(arr, i + 1)
+
+print(arr_sum([1, 2, 3, 4]))  # 10
+```
+
+### Maximum element:
+
+```python
+def arr_max(arr, i=0):
+    if i == len(arr) - 1:   # base case: last element
+        return arr[i]
+    rest_max = arr_max(arr, i + 1)
+    return arr[i] if arr[i] > rest_max else rest_max
+
+print(arr_max([3, 1, 7, 2]))  # 7
+```
+
+### Binary Search (recursive):
+
+```python
+def binary_search(arr, target, low, high):
+    if low > high:          # base case: not found
+        return -1
+    mid = (low + high) // 2
+    if arr[mid] == target:  # base case: found
+        return mid
+    elif arr[mid] < target:
+        return binary_search(arr, target, mid + 1, high)
+    else:
+        return binary_search(arr, target, low, mid - 1)
+
+arr = [1, 3, 5, 7, 9, 11]
+print(binary_search(arr, 7, 0, len(arr)-1))  # 3
+```
+
+### Reverse an array in-place:
+
+```python
+def reverse_arr(arr, left=0, right=None):
+    if right is None:
+        right = len(arr) - 1
+    if left >= right:       # base case
+        return
+    arr[left], arr[right] = arr[right], arr[left]
+    reverse_arr(arr, left + 1, right - 1)
+
+arr = [1, 2, 3, 4, 5]
+reverse_arr(arr)
+print(arr)  # [5, 4, 3, 2, 1]
+```
+
+> 🎯 **Interview tips:**
+> - Always pass index `i` rather than slicing (`arr[1:]`) — slicing creates new arrays → **O(n²) space** vs **O(n)**
+> - Binary search: Time **O(log n)**, Space **O(log n)** recursive vs **O(1)** iterative
+
+---
+
+## 7. 🔤 String Recursion
+
+### Reverse a string:
+
+```python
+def reverse_str(s):
+    if len(s) <= 1:         # base case
+        return s
+    return reverse_str(s[1:]) + s[0]
+
+print(reverse_str("hello"))  # "olleh"
+```
+
+### Palindrome check:
+
+```python
+def is_palindrome(s):
+    if len(s) <= 1:                     # base case
+        return True
+    if s[0] != s[-1]:                   # mismatch
+        return False
+    return is_palindrome(s[1:-1])       # check inner substring
+
+print(is_palindrome("racecar"))  # True
+print(is_palindrome("hello"))    # False
+```
+
+### Count occurrences of a character:
+
+```python
+def count_char(s, ch):
+    if not s:               # base case: empty string
+        return 0
+    return (1 if s[0] == ch else 0) + count_char(s[1:], ch)
+
+print(count_char("mississippi", "s"))  # 4
+```
+
+### All permutations of a string:
+
+```python
+def permutations(s):
+    if len(s) <= 1:         # base case
+        return [s]
+    result = []
+    for i, ch in enumerate(s):
+        rest = s[:i] + s[i+1:]          # remaining chars
+        for perm in permutations(rest):
+            result.append(ch + perm)
+    return result
+
+print(permutations("abc"))
+# ['abc', 'acb', 'bac', 'bca', 'cab', 'cba']
+```
+
+### Check if string contains only digits:
+
+```python
+def all_digits(s):
+    if not s:               # base case: empty = True
+        return True
+    if not s[0].isdigit():
+        return False
+    return all_digits(s[1:])
+```
+
+> 🎯 **Interview tips:**
+> - String slicing in Python is **O(k)** — mention this for space/time analysis
+> - For permutations: Time **O(n × n!)**, there are `n!` permutations each of length `n`
+> - Palindrome recursion is a great example of **shrinking both ends** toward the center
+
+---
+
+## ⚡ Recursion: Complexity Cheat Sheet
+
+| Problem | Time | Space |
+|---|---|---|
+| Factorial | O(n) | O(n) |
+| Fibonacci (naive) | O(2ⁿ) | O(n) |
+| Fibonacci (memo) | O(n) | O(n) |
+| Tower of Hanoi | O(2ⁿ) | O(n) |
+| Power (naive) | O(n) | O(n) |
+| Power (fast exp) | O(log n) | O(log n) |
+| Binary Search | O(log n) | O(log n) |
+| Permutations | O(n × n!) | O(n!) |
+
+## 🧠 Recursion: Key Interview Talking Points
+
+- **"Always identify base case first"** — the most common mistake is missing or wrong base case
+- **"Recursive calls must progress toward the base case"** — otherwise infinite recursion
+- **"Each recursive call gets its own stack frame"** — this is why space is O(depth)
+- **"Recursion can always be converted to iteration with an explicit stack"**
+- **Memoization = recursion + caching** → bridges recursion and dynamic programming
+- When asked to optimize: naive recursion → memoization → bottom-up DP → iterative
+
+---
+
+---
+
+# 🔢 Combinatorics
+
+## 📌 What is Combinatorics in CS Interviews?
+
+Combinatorics problems involve **generating/counting all possible arrangements or selections** from a set. Almost always solved with **backtracking** — a recursive technique that builds candidates incrementally and **abandons (backtracks)** a path as soon as it's invalid.
+
+**The Backtracking Template — memorize this:**
+
+```python
+def backtrack(state, choices):
+    if is_solution(state):      # base case: valid complete solution
+        result.append(state[:]) # add a COPY, not a reference
+        return
+    for choice in choices:
+        state.append(choice)    # make choice
+        backtrack(state, next_choices)
+        state.pop()             # UNDO choice ← this is the "backtrack"
+```
+
+> ⚠️ **Most common interview mistake:** Appending `state` directly instead of `state[:]` or `state.copy()` — you'll get all identical results since lists are mutable references.
+
+---
+
+## 1. 📦 Generate Subsets (Power Set)
+
+Given `nums = [1,2,3]`, return **all possible subsets** including `[]` and the full set.
+
+Total subsets of n elements = **2ⁿ** (each element is either IN or OUT)
+
+### Approach 1 — Backtracking (✅ most interview-friendly):
+
+```python
+def subsets(nums):
+    result = []
+
+    def backtrack(start, current):
+        result.append(current[:])   # every state is a valid subset
+        for i in range(start, len(nums)):
+            current.append(nums[i])         # include nums[i]
+            backtrack(i + 1, current)       # recurse with next elements
+            current.pop()                   # exclude nums[i] (backtrack)
+
+    backtrack(0, [])
+    return result
+
+print(subsets([1, 2, 3]))
+# [[], [1], [1,2], [1,2,3], [1,3], [2], [2,3], [3]]
+```
+
+**Decision tree for [1,2,3]:**
+
+```
+                    []
+          /          |          \
+        [1]         [2]         [3]
+       /   \          \
+    [1,2] [1,3]      [2,3]
+      |
+   [1,2,3]
+```
+
+### Approach 2 — Iterative (bit manipulation):
+
+```python
+def subsets_bit(nums):
+    n = len(nums)
+    result = []
+    for mask in range(1 << n):      # 0 to 2^n - 1
+        subset = []
+        for i in range(n):
+            if mask & (1 << i):     # if i-th bit is set
+                subset.append(nums[i])
+        result.append(subset)
+    return result
+
+# mask=0b000 → [], mask=0b001 → [1], mask=0b011 → [1,2], etc.
+```
+
+### Subsets II — with duplicates (e.g. `[1,2,2]`):
+
+```python
+def subsets_with_dup(nums):
+    result = []
+    nums.sort()                     # MUST sort first
+
+    def backtrack(start, current):
+        result.append(current[:])
+        for i in range(start, len(nums)):
+            if i > start and nums[i] == nums[i-1]:  # skip duplicate
+                continue
+            current.append(nums[i])
+            backtrack(i + 1, current)
+            current.pop()
+
+    backtrack(0, [])
+    return result
+
+print(subsets_with_dup([1, 2, 2]))
+# [[], [1], [1,2], [1,2,2], [2], [2,2]]
+```
+
+> 🎯 **Interview tips:**
+> - Time: **O(n × 2ⁿ)** — 2ⁿ subsets, each takes O(n) to copy
+> - Space: **O(n)** call stack depth (not counting output)
+> - Key insight: *"We add to result at every node, not just leaf nodes"*
+> - Duplicate handling: **sort first**, then skip `nums[i] == nums[i-1]` when `i > start`
+
+---
+
+## 2. 🔀 Generate Permutations
+
+Given `nums = [1,2,3]`, return **all orderings** — every element used exactly once.
+
+Total permutations of n elements = **n!**
+
+### Approach 1 — Backtracking with `used[]` array:
+
+```python
+def permutations(nums):
+    result = []
+    used = [False] * len(nums)
+
+    def backtrack(current):
+        if len(current) == len(nums):   # base case: full permutation
+            result.append(current[:])
+            return
+        for i in range(len(nums)):
+            if used[i]:
+                continue
+            used[i] = True
+            current.append(nums[i])
+            backtrack(current)
+            current.pop()               # backtrack
+            used[i] = False             # backtrack
+
+    backtrack([])
+    return result
+
+print(permutations([1, 2, 3]))
+# [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+```
+
+### Approach 2 — Swap-based (in-place):
+
+```python
+def permutations_swap(nums):
+    result = []
+
+    def backtrack(start):
+        if start == len(nums):
+            result.append(nums[:])
+            return
+        for i in range(start, len(nums)):
+            nums[start], nums[i] = nums[i], nums[start]     # swap in
+            backtrack(start + 1)
+            nums[start], nums[i] = nums[i], nums[start]     # swap back
+
+    backtrack(0)
+    return result
+```
+
+### Permutations II — with duplicates (e.g. `[1,1,2]`):
+
+```python
+def perms_unique(nums):
+    result = []
+    nums.sort()
+    used = [False] * len(nums)
+
+    def backtrack(current):
+        if len(current) == len(nums):
+            result.append(current[:])
+            return
+        for i in range(len(nums)):
+            if used[i]:
+                continue
+            # Skip duplicate: same value, previous not used in this level
+            if i > 0 and nums[i] == nums[i-1] and not used[i-1]:
+                continue
+            used[i] = True
+            current.append(nums[i])
+            backtrack(current)
+            current.pop()
+            used[i] = False
+
+    backtrack([])
+    return result
+
+print(perms_unique([1, 1, 2]))
+# [[1,1,2],[1,2,1],[2,1,1]]
+```
+
+> 🎯 **Interview tips:**
+> - Time: **O(n × n!)** — n! permutations, O(n) to copy each
+> - Space: **O(n)** for the `used` array + call stack
+> - Subsets vs Permutations: subsets use `start` index to avoid reuse, permutations use `used[]`
+> - Duplicate pruning condition: `nums[i] == nums[i-1] and not used[i-1]`
+
+---
+
+## 3. 📱 Phone Letter Mapping (Letter Combinations)
+
+Given a string of digits `"23"`, return all letter combinations (T9 keyboard).
+
+```
+2→"abc", 3→"def", 4→"ghi", 5→"jkl"
+6→"mno", 7→"pqrs", 8→"tuv", 9→"wxyz"
+```
+
+```python
+def letter_combinations(digits):
+    if not digits:
+        return []
+
+    phone_map = {
+        '2': 'abc', '3': 'def', '4': 'ghi', '5': 'jkl',
+        '6': 'mno', '7': 'pqrs', '8': 'tuv', '9': 'wxyz'
+    }
+    result = []
+
+    def backtrack(index, current):
+        if index == len(digits):        # base case: used all digits
+            result.append("".join(current))
+            return
+        for ch in phone_map[digits[index]]:
+            current.append(ch)
+            backtrack(index + 1, current)
+            current.pop()               # backtrack
+
+    backtrack(0, [])
+    return result
+
+print(letter_combinations("23"))
+# ['ad','ae','af','bd','be','bf','cd','ce','cf']
+```
+
+**Decision tree for "23":**
+
+```
+            ""
+      /      |      \
+     a        b        c          ← letters for '2'
+   / | \    / | \    / | \
+  d  e  f  d  e  f  d  e  f      ← letters for '3'
+```
+
+**Count combinations without generating:**
+
+```python
+from math import prod
+
+def count_combinations(digits):
+    phone_map = {
+        '2':3,'3':3,'4':3,'5':3,
+        '6':3,'7':4,'8':3,'9':4   # 7,9 have 4 letters
+    }
+    return prod(phone_map[d] for d in digits)
+
+print(count_combinations("79"))  # 4*4 = 16
+```
+
+**Pythonic alternative using itertools:**
+
+```python
+from itertools import product
+
+def letter_combinations_iter(digits):
+    if not digits: return []
+    phone_map = {'2':'abc','3':'def','4':'ghi','5':'jkl',
+                 '6':'mno','7':'pqrs','8':'tuv','9':'wxyz'}
+    return [''.join(combo) for combo in product(*[phone_map[d] for d in digits])]
+```
+
+> 🎯 **Interview tips:**
+> - Time: **O(4ⁿ)** worst case, typically **O(3ⁿ)**
+> - Space: **O(n)** call stack where n = len(digits)
+> - Edge cases: empty string `""` → return `[]`, single digit → return its letters
+
+---
+
+## 4. 🔣 Generate Parentheses
+
+Given `n`, generate all **valid** combinations of `n` pairs of parentheses.
+
+**Key invariant (pruning rules):**
+- Can add `(` only if `open < n`
+- Can add `)` only if `close < open`
+
+```python
+def generate_parentheses(n):
+    result = []
+
+    def backtrack(current, open_count, close_count):
+        if len(current) == 2 * n:           # base case: full string built
+            result.append("".join(current))
+            return
+        if open_count < n:                  # can add open paren
+            current.append('(')
+            backtrack(current, open_count + 1, close_count)
+            current.pop()
+        if close_count < open_count:        # can add close paren
+            current.append(')')
+            backtrack(current, open_count, close_count + 1)
+            current.pop()
+
+    backtrack([], 0, 0)
+    return result
+
+print(generate_parentheses(3))
+# ['((()))', '(()())', '(())()', '()(())', '()()()']
+print(len(generate_parentheses(3)))  # 5 = Catalan number C(3)
+```
+
+**Decision tree for n=2:**
+
+```
+              ""
+              |
+             "("           ← open=1, close=0
+            /     \
+         "(("      "()"    ← open=2 or add ')'
+          |          |
+        "(()"      "()()"
+          |
+        "(())"
+```
+
+**Verify a parentheses string (bonus):**
+
+```python
+def is_valid(s):
+    balance = 0
+    for ch in s:
+        balance += 1 if ch == '(' else -1
+        if balance < 0:     # closed before opened
+            return False
+    return balance == 0
+
+print(is_valid("(()())"))   # True
+print(is_valid(")("))       # False
+```
+
+> 🎯 **Interview tips:**
+> - Total valid combos for n pairs = **Catalan number**: `C(n) = (2n)! / ((n+1)! × n!)`
+> - C(1)=1, C(2)=2, C(3)=5, C(4)=14
+> - Time: **O(4ⁿ / √n)**, Space: **O(n)** call stack
+> - The pruning `close < open` keeps all generated strings valid — **no post-filtering needed**
+
+---
+
+## 5. 🎯 Combination Sum
+
+### Combination Sum I — unlimited reuse:
+
+```python
+def combination_sum(candidates, target):
+    result = []
+    candidates.sort()
+
+    def backtrack(start, current, remaining):
+        if remaining == 0:                  # base case: exact match
+            result.append(current[:])
+            return
+        for i in range(start, len(candidates)):
+            if candidates[i] > remaining:   # prune: no point continuing
+                break
+            current.append(candidates[i])
+            backtrack(i, current, remaining - candidates[i])  # i not i+1 (reuse allowed)
+            current.pop()
+
+    backtrack(0, [], target)
+    return result
+
+print(combination_sum([2, 3, 6, 7], 7))
+# [[2,2,3],[7]]
+```
+
+### Combination Sum II — each number used once, may have duplicates:
+
+```python
+def combination_sum2(candidates, target):
+    result = []
+    candidates.sort()                   # MUST sort for dedup
+
+    def backtrack(start, current, remaining):
+        if remaining == 0:
+            result.append(current[:])
+            return
+        for i in range(start, len(candidates)):
+            if candidates[i] > remaining:
+                break
+            if i > start and candidates[i] == candidates[i-1]:  # skip dup
+                continue
+            current.append(candidates[i])
+            backtrack(i + 1, current, remaining - candidates[i])  # i+1 (no reuse)
+            current.pop()
+
+    backtrack(0, [], target)
+    return result
+
+print(combination_sum2([10,1,2,7,6,1,5], 8))
+# [[1,1,6],[1,2,5],[1,7],[2,6]]
+```
+
+### Combination Sum III — exactly k numbers from 1–9:
+
+```python
+def combination_sum3(k, n):
+    """Find all combos of k numbers from 1-9 that sum to n"""
+    result = []
+
+    def backtrack(start, current, remaining):
+        if len(current) == k and remaining == 0:    # base case
+            result.append(current[:])
+            return
+        if len(current) == k or remaining <= 0:     # prune
+            return
+        for i in range(start, 10):
+            current.append(i)
+            backtrack(i + 1, current, remaining - i)
+            current.pop()
+
+    backtrack(1, [], n)
+    return result
+
+print(combination_sum3(3, 7))   # [[1,2,4]]
+print(combination_sum3(3, 9))   # [[1,2,6],[1,3,5],[2,3,4]]
+```
+
+**Side-by-side differences:**
+
+| | Reuse | Duplicates in input | Skip condition |
+|---|---|---|---|
+| **Sum I** | ✅ Yes | ❌ No | `if candidates[i] > remaining: break` |
+| **Sum II** | ❌ No | ✅ Yes | `if i > start and nums[i]==nums[i-1]` |
+| **Sum III** | ❌ No | ❌ No | `len(current)==k or remaining<=0` |
+
+> 🎯 **Interview tips:**
+> - **Reuse allowed → pass `i`** to next call; **no reuse → pass `i+1`**
+> - Always **sort first** — enables the `break` pruning when `candidates[i] > remaining`
+> - Time: **O(n^(T/M))** where T=target, M=min candidate
+
+---
+
+## ⚡ Combinatorics: Pattern Cheat Sheet
+
+| Problem | Adds to result | Key parameter | Reuse | Dedup trick |
+|---|---|---|---|---|
+| Subsets | Every node | `start` index | ❌ | sort + skip `nums[i]==nums[i-1]` |
+| Permutations | Leaf only | `used[]` array | ❌ | sort + skip if `not used[i-1]` |
+| Phone Mapping | Leaf only | digit `index` | N/A | N/A |
+| Parentheses | Leaf only | `open`, `close` counts | N/A | pruning rules |
+| Combo Sum | Leaf only | `start` + `remaining` | configurable | sort + skip |
+
+## 🧠 Combinatorics: Key Interview Talking Points
+
+- **Backtracking = DFS + Undo** — always explain the undo step explicitly
+- **Always copy before appending** — `result.append(current[:])` not `result.append(current)`
+- **Sort before deduplicating** — identical elements must be adjacent to skip them
+- **Reuse decision = index passed to next call** — `i` means reuse, `i+1` means no reuse
+- **Pruning is key** — mention `break` when `candidates[i] > remaining`
+- **Counting vs generating** — if they only need the count, dynamic programming is often faster
+
+---
+
+---
+
+# ♟️ Backtracking
+
+## 📌 What is Backtracking?
+
+Backtracking is a **systematic trial-and-error** algorithm that explores all possibilities by building solutions incrementally and **pruning paths** that can't lead to valid solutions.
+
+**Difference from pure recursion:** Backtracking actively *undoes* decisions when a path fails.
+
+**The Universal Backtracking Template:**
+
+```python
+def backtrack(state, choices):
+    if is_complete(state):          # base case: valid solution found
+        result.append(copy(state))
+        return True
+
+    for choice in choices:
+        if is_valid(state, choice): # prune invalid paths EARLY
+            apply(state, choice)    # make move
+            if backtrack(state):    # recurse
+                return True         # propagate success (if one solution needed)
+            undo(state, choice)     # backtrack ← undo the move
+
+    return False                    # no valid choice worked
+```
+
+> ⚠️ **Critical interview distinction:**
+> - **Find ALL solutions** → never return early, always backtrack fully
+> - **Find ONE solution** → return `True` on first success, propagate it up
+
+---
+
+## 1. 👑 N-Queens
+
+Place `n` queens on an `n×n` board so no two queens attack each other.
+
+**Three attack conditions:**
+- Same column: `col in cols`
+- Same diagonal (↘): `row - col` is constant
+- Same anti-diagonal (↙): `row + col` is constant
+
+```python
+def solve_n_queens(n):
+    result = []
+    cols = set()
+    diag1 = set()       # row - col
+    diag2 = set()       # row + col
+    board = [['.' ] * n for _ in range(n)]
+
+    def backtrack(row):
+        if row == n:                            # all rows filled
+            result.append(["".join(r) for r in board])
+            return
+        for col in range(n):
+            if col in cols or (row-col) in diag1 or (row+col) in diag2:
+                continue                        # prune: queen attacks here
+            cols.add(col); diag1.add(row - col); diag2.add(row + col)
+            board[row][col] = 'Q'
+            backtrack(row + 1)
+            cols.remove(col); diag1.remove(row - col); diag2.remove(row + col)
+            board[row][col] = '.'
+
+    backtrack(0)
+    return result
+```
+
+**Count-only version (optimized):**
+
+```python
+def total_n_queens(n):
+    count = [0]
+    cols, d1, d2 = set(), set(), set()
+
+    def backtrack(row):
+        if row == n:
+            count[0] += 1
+            return
+        for col in range(n):
+            if col in cols or (row-col) in d1 or (row+col) in d2:
+                continue
+            cols.add(col); d1.add(row-col); d2.add(row+col)
+            backtrack(row + 1)
+            cols.remove(col); d1.remove(row-col); d2.remove(row+col)
+
+    backtrack(0)
+    return count[0]
+
+print(total_n_queens(4))   # 2
+print(total_n_queens(8))   # 92
+```
+
+**Diagonal sets explanation:**
+
+```
+Board (4x4):          row-col values:    row+col values:
+. . . .               -0-1-2-3          0 1 2 3
+. . . .               0 -1-2            1 2 3 4
+. . . .               1  0 -1           2 3 4 5
+. . . .               2  1  0           3 4 5 6
+```
+
+> 🎯 **Interview tips:**
+> - Time: **O(n!)**, Space: **O(n)** for sets + call stack
+> - Known solutions: n=1→1, n=4→2, n=8→92
+> - Using sets for O(1) lookup — mention vs O(n) linear scan
+
+---
+
+## 2. 🔢 Sudoku Solver
+
+Fill a 9×9 grid so every row, column, and 3×3 box contains digits 1–9 exactly once.
+
+```python
+def solve_sudoku(board):
+    rows = [set() for _ in range(9)]
+    cols = [set() for _ in range(9)]
+    boxes = [[set() for _ in range(3)] for _ in range(3)]
+    empty = []
+
+    for r in range(9):
+        for c in range(9):
+            if board[r][c] != '.':
+                d = board[r][c]
+                rows[r].add(d); cols[c].add(d); boxes[r//3][c//3].add(d)
+            else:
+                empty.append((r, c))
+
+    def backtrack(idx):
+        if idx == len(empty):       # all empty cells filled
+            return True
+        r, c = empty[idx]
+        for d in '123456789':
+            if d in rows[r] or d in cols[c] or d in boxes[r//3][c//3]:
+                continue            # prune
+            rows[r].add(d); cols[c].add(d); boxes[r//3][c//3].add(d)
+            board[r][c] = d
+            if backtrack(idx + 1):
+                return True
+            rows[r].remove(d); cols[c].remove(d); boxes[r//3][c//3].remove(d)
+            board[r][c] = '.'
+        return False
+
+    backtrack(0)
+    return board
+```
+
+**Box index visualization:**
+
+```
+(0,0)(0,1)(0,2) | (0,3)(0,4)(0,5) | (0,6)(0,7)(0,8)
+  box[0][0]     |    box[0][1]     |    box[0][2]
+-------------------------------------------------------
+  box[1][0]     |    box[1][1]     |    box[1][2]
+-------------------------------------------------------
+  box[2][0]     |    box[2][1]     |    box[2][2]
+
+Key: box index = (row//3, col//3)
+```
+
+**MRV heuristic (Most Constrained Cell First):**
+
+```python
+def find_best_empty(board, rows, cols, boxes):
+    """Pick empty cell with fewest valid candidates"""
+    best, best_pos = 10, None
+    for r in range(9):
+        for c in range(9):
+            if board[r][c] == '.':
+                count = sum(
+                    1 for d in '123456789'
+                    if d not in rows[r] and d not in cols[c]
+                    and d not in boxes[r//3][c//3]
+                )
+                if count < best:
+                    best, best_pos = count, (r, c)
+    return best_pos
+```
+
+> 🎯 **Interview tips:**
+> - Time: Worst case **O(9^m)** where m = number of empty cells
+> - **MRV heuristic**: fill cells with fewest options first — dramatically reduces search space
+> - Box index formula `r//3, c//3` — be ready to derive this on a whiteboard
+
+---
+
+## 3. 🔤 Word Search
+
+Given a 2D grid and a word, return `True` if the word exists (no cell reused).
+
+```python
+def word_search(board, word):
+    rows, cols = len(board), len(board[0])
+    directions = [(0,1),(0,-1),(1,0),(-1,0)]
+
+    def backtrack(r, c, idx):
+        if idx == len(word):            # base case: matched all chars
+            return True
+        if r < 0 or r >= rows or c < 0 or c >= cols:
+            return False
+        if board[r][c] != word[idx]:
+            return False
+
+        temp = board[r][c]
+        board[r][c] = '#'               # mark visited (in-place)
+
+        for dr, dc in directions:
+            if backtrack(r+dr, c+dc, idx+1):
+                board[r][c] = temp
+                return True
+
+        board[r][c] = temp              # restore (backtrack)
+        return False
+
+    for r in range(rows):
+        for c in range(cols):
+            if backtrack(r, c, 0):
+                return True
+    return False
+
+board = [
+    ['A','B','C','E'],
+    ['S','F','C','S'],
+    ['A','D','E','E']
+]
+print(word_search(board, "ABCCED"))   # True
+print(word_search(board, "ABCB"))     # False
+```
+
+**Word Search II — find all words using Trie:**
+
+```python
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.word = None
+
+def find_words(board, words):
+    root = TrieNode()
+    for w in words:
+        node = root
+        for ch in w:
+            node = node.children.setdefault(ch, TrieNode())
+        node.word = w
+
+    rows, cols = len(board), len(board[0])
+    result = []
+
+    def backtrack(r, c, node):
+        ch = board[r][c]
+        next_node = node.children.get(ch)
+        if not next_node:
+            return
+        if next_node.word:
+            result.append(next_node.word)
+            next_node.word = None       # avoid duplicates
+
+        board[r][c] = '#'
+        for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)]:
+            nr, nc = r+dr, c+dc
+            if 0 <= nr < rows and 0 <= nc < cols and board[nr][nc] != '#':
+                backtrack(nr, nc, next_node)
+        board[r][c] = ch
+
+    for r in range(rows):
+        for c in range(cols):
+            backtrack(r, c, root)
+    return result
+```
+
+> 🎯 **Interview tips:**
+> - Time: **O(m × n × 4 × 3^(L-1))** where L = word length
+> - **In-place marking** with `'#'` avoids extra `visited` array
+> - Word Search II with Trie avoids redundant search per word
+
+---
+
+## 4. 🐀 Rat in a Maze
+
+Find all paths from `(0,0)` to `(n-1,n-1)` — `1` = open, `0` = blocked.
+
+```python
+def rat_maze_directions(maze):
+    n = len(maze)
+    result = []
+    visited = [[False]*n for _ in range(n)]
+    dirs = {'D':(1,0), 'U':(-1,0), 'R':(0,1), 'L':(0,-1)}
+
+    def backtrack(r, c, path_str):
+        if r == n-1 and c == n-1:
+            result.append(path_str)
+            return
+        for direction, (dr, dc) in dirs.items():
+            nr, nc = r+dr, c+dc
+            if 0<=nr<n and 0<=nc<n and maze[nr][nc]==1 and not visited[nr][nc]:
+                visited[nr][nc] = True
+                backtrack(nr, nc, path_str + direction)
+                visited[nr][nc] = False     # backtrack
+
+    visited[0][0] = True
+    if maze[0][0] == 1:
+        backtrack(0, 0, "")
+    return result
+
+maze = [
+    [1, 0, 0, 0],
+    [1, 1, 0, 1],
+    [0, 1, 0, 0],
+    [0, 1, 1, 1]
+]
+print(rat_maze_directions(maze))
+```
+
+> 🎯 **Interview tips:**
+> - Time: **O(4^(n²))** worst case
+> - Space: **O(n²)** for visited matrix
+> - **Minimum path length** → use BFS instead (BFS guarantees shortest path)
+
+---
+
+## 5. ♞ Knight's Tour
+
+Move a chess knight across an `n×n` board, visiting every cell exactly once.
+
+```python
+def knights_tour(n):
+    board = [[-1]*n for _ in range(n)]
+    moves = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)]
+
+    def is_valid(r, c):
+        return 0 <= r < n and 0 <= c < n and board[r][c] == -1
+
+    def backtrack(r, c, move_num):
+        if move_num == n*n:
+            return True
+        for dr, dc in moves:
+            nr, nc = r+dr, c+dc
+            if is_valid(nr, nc):
+                board[nr][nc] = move_num
+                if backtrack(nr, nc, move_num+1):
+                    return True
+                board[nr][nc] = -1      # backtrack
+        return False
+
+    board[0][0] = 0
+    if backtrack(0, 0, 1):
+        return board
+    return None
+```
+
+**Warnsdorff's Heuristic — always move to most constrained cell:**
+
+```python
+def knights_tour_warnsdorff(n):
+    board = [[-1]*n for _ in range(n)]
+    moves = [(2,1),(2,-1),(-2,1),(-2,-1),(1,2),(1,-2),(-1,2),(-1,-2)]
+
+    def is_valid(r, c):
+        return 0 <= r < n and 0 <= c < n and board[r][c] == -1
+
+    def degree(r, c):
+        return sum(1 for dr,dc in moves if is_valid(r+dr, c+dc))
+
+    def backtrack(r, c, move_num):
+        if move_num == n*n:
+            return True
+        neighbors = [(r+dr, c+dc) for dr,dc in moves if is_valid(r+dr, c+dc)]
+        neighbors.sort(key=lambda pos: degree(pos[0], pos[1]))  # Warnsdorff sort
+
+        for nr, nc in neighbors:
+            board[nr][nc] = move_num
+            if backtrack(nr, nc, move_num+1):
+                return True
+            board[nr][nc] = -1
+
+        return False
+
+    board[0][0] = 0
+    return backtrack(0, 0, 1)
+```
+
+**Knight move visualization:**
+
+```
+  . X . X .
+  X . . . X
+  . . K . .     K = Knight at center
+  X . . . X     X = valid move destinations
+  . X . X .
+```
+
+> 🎯 **Interview tips:**
+> - Naive time: **O(8^(n²))** — impractical without heuristics
+> - With Warnsdorff: nearly **O(n²)** in practice
+> - Interviewers usually want the approach + Warnsdorff explanation, not full code
+
+---
+
+## 6. 🎯 Subset Sum
+
+### Variant 1 — Does any subset exist? (Decision):
+
+```python
+def subset_sum_exists(nums, target):
+    def backtrack(idx, remaining):
+        if remaining == 0:
+            return True
+        if idx == len(nums) or remaining < 0:
+            return False
+        if backtrack(idx+1, remaining - nums[idx]):
+            return True
+        return backtrack(idx+1, remaining)
+
+    return backtrack(0, target)
+
+print(subset_sum_exists([3,1,5,9,12], 8))   # True  (3+5)
+```
+
+### Variant 2 — Find ALL subsets that sum to target:
+
+```python
+def subset_sum_all(nums, target):
+    result = []
+    nums.sort()
+
+    def backtrack(start, current, remaining):
+        if remaining == 0:
+            result.append(current[:])
+            return
+        for i in range(start, len(nums)):
+            if nums[i] > remaining:
+                break
+            current.append(nums[i])
+            backtrack(i+1, current, remaining - nums[i])
+            current.pop()
+
+    backtrack(0, [], target)
+    return result
+
+print(subset_sum_all([1,2,3,4,5], 5))
+# [[1,4],[2,3],[5]]
+```
+
+### Variant 3 — DP Memoization (Top-Down):
+
+```python
+def subset_sum_memo(nums, target):
+    from functools import lru_cache
+
+    @lru_cache(maxsize=None)
+    def dp(idx, remaining):
+        if remaining == 0:
+            return True
+        if idx == len(nums) or remaining < 0:
+            return False
+        return dp(idx+1, remaining - nums[idx]) or dp(idx+1, remaining)
+
+    return dp(0, target)
+```
+
+### Variant 4 — Classic DP (Bottom-Up):
+
+```python
+def subset_sum_dp(nums, target):
+    n = len(nums)
+    dp = [[False]*(target+1) for _ in range(n+1)]
+    for i in range(n+1):
+        dp[i][0] = True     # empty subset always sums to 0
+
+    for i in range(1, n+1):
+        for j in range(target+1):
+            dp[i][j] = dp[i-1][j]
+            if j >= nums[i-1]:
+                dp[i][j] = dp[i][j] or dp[i-1][j-nums[i-1]]
+
+    return dp[n][target]
+
+# Space-optimized O(target):
+def subset_sum_dp_opt(nums, target):
+    dp = [False] * (target+1)
+    dp[0] = True
+    for num in nums:
+        for j in range(target, num-1, -1):  # iterate backwards!
+            dp[j] = dp[j] or dp[j-num]
+    return dp[target]
+```
+
+**Why iterate backwards in optimized DP:**
+
+```
+Forward: uses updated values from current row → each item used multiple times (unbounded knapsack)
+Backward: uses values from previous row     → each item used at most once (0/1 knapsack)
+```
+
+> 🎯 **Interview tips:**
+> - Backtracking finds actual subsets; DP answers yes/no faster
+> - **Space-optimized DP is the gold standard** for decision/count version
+> - Backward iteration in 1D DP is a key insight interviewers love to ask about
+> - Subset Sum ↔ **0/1 Knapsack**: same structure, different objectives
+
+---
+
+## ⚡ Backtracking: Complexity Cheat Sheet
+
+| Problem | Time | Space | Key Pruning |
+|---|---|---|---|
+| N-Queens | O(n!) | O(n) | col/diag sets for O(1) check |
+| Sudoku | O(9^m) | O(m) | constraint sets per row/col/box |
+| Word Search | O(mn × 3^L) | O(L) | in-place `#` marking |
+| Rat in Maze | O(4^(n²)) | O(n²) | bounds + visited check |
+| Knight's Tour | O(8^(n²)) | O(n²) | Warnsdorff heuristic |
+| Subset Sum (BT) | O(2^n) | O(n) | sort + break early |
+| Subset Sum (DP) | O(n×T) | O(T) | 1D DP, reverse iteration |
+
+## 🧠 Backtracking: Key Interview Talking Points
+
+- **"Backtracking = DFS + pruning + undo"** — always name all three components
+- **Pruning separates a good answer from a great one** — name what you're pruning and why
+- **In-place state modification** avoids extra memory — always mention the tradeoff
+- **Return `True` immediately on first solution** when only one is needed
+- **Heuristics turn exponential into practical**: Warnsdorff for Knight's Tour, MRV for Sudoku
+- **Backtracking vs DP**: need actual solution path → backtracking; count/existence → DP
+
+---
+
+---
+
+# ⚡ Optimization — Memoization & Pruning
+
+## 📌 Why Optimization Matters in Interviews
+
+Raw recursive/backtracking solutions are often **correct but too slow**. Interviewers expect you to recognize inefficiency and apply targeted fixes.
+
+> 🎯 **Interview meta-tip:** Always code the naive solution first, state its complexity, *then* optimize.
+
+---
+
+## 1. 🧠 Memoization
+
+### What it is
+
+Cache the result of a function call the first time it's computed, return the cached value on subsequent calls.
+
+**Core idea:** If `f(x)` was already computed, look it up in O(1).
+
+### The Memoization Template:
+
+```python
+# Manual memo dict
+def f(n, memo=None):
+    if memo is None: memo = {}
+    if n in memo:
+        return memo[n]          # cache hit
+    if n == 0:                  # base case
+        return 0
+    memo[n] = f(n-1, memo) + f(n-2, memo)
+    return memo[n]
+
+# Pythonic: @lru_cache (preferred in interviews)
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def f(n):
+    if n <= 1:
+        return n
+    return f(n-1) + f(n-2)
+```
+
+> ⚠️ **`memo={}` as default arg is a Python gotcha** — mutable default args are shared across calls. Use `memo=None` + `if memo is None: memo = {}` for production code.
+
+---
+
+### 📊 Problem 1: Fibonacci
+
+**Redundant call tree for fib(6):**
+
+```
+                    fib(6)
+                /          \
+           fib(5)           fib(4)
+          /      \         /      \
+       fib(4)  fib(3)  fib(3)  fib(2)
+       /    \
+    fib(3) fib(2)
+    ← fib(4) computed TWICE, fib(3) THREE times
+```
+
+**Memoized — O(n):**
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def fib(n):
+    if n <= 1: return n
+    return fib(n-1) + fib(n-2)
+
+# Each unique n computed exactly once → n+1 unique calls total
+```
+
+---
+
+### 📊 Problem 2: Longest Common Subsequence (LCS)
+
+**Memoized — O(m×n):**
+
+```python
+from functools import lru_cache
+
+def lcs(s1, s2):
+    @lru_cache(maxsize=None)
+    def dp(i, j):
+        if i == len(s1) or j == len(s2):
+            return 0
+        if s1[i] == s2[j]:
+            return 1 + dp(i+1, j+1)
+        return max(dp(i+1, j), dp(i, j+1))
+    return dp(0, 0)
+
+print(lcs("abcde", "ace"))   # 3  (a,c,e)
+print(lcs("abc", "def"))     # 0
+```
+
+**State space visualization for "ace" vs "abcde":**
+
+```
+    ""  a  b  c  d  e
+""   0  0  0  0  0  0
+a    0  1  1  1  1  1
+c    0  1  1  2  2  2
+e    0  1  1  2  2  3   ← answer at dp(m,n)
+
+Each cell computed once → O(m×n) total
+```
+
+---
+
+### 📊 Problem 3: 0/1 Knapsack
+
+```python
+from functools import lru_cache
+
+def knapsack(weights, values, capacity):
+    n = len(weights)
+
+    @lru_cache(maxsize=None)
+    def dp(idx, remaining_cap):
+        if idx == n or remaining_cap == 0:
+            return 0
+        if weights[idx] > remaining_cap:
+            return dp(idx+1, remaining_cap)
+        return max(
+            dp(idx+1, remaining_cap),                               # skip
+            values[idx] + dp(idx+1, remaining_cap - weights[idx])  # take
+        )
+
+    return dp(0, capacity)
+
+weights = [1, 3, 4, 5]
+values  = [1, 4, 5, 7]
+print(knapsack(weights, values, 7))     # 9
+```
+
+**Cache analysis:**
+
+```
+Without memo: O(2^n) — many states recomputed
+With memo:    O(n × W) — each (idx, cap) pair computed once
+```
+
+---
+
+### 📊 Problem 4: Word Break
+
+```python
+from functools import lru_cache
+
+def word_break(s, word_dict):
+    word_set = set(word_dict)
+
+    @lru_cache(maxsize=None)
+    def dp(start):
+        if start == len(s):
+            return True
+        for end in range(start+1, len(s)+1):
+            if s[start:end] in word_set and dp(end):
+                return True
+        return False
+
+    return dp(0)
+
+print(word_break("leetcode", ["leet","code"]))          # True
+print(word_break("catsandog", ["cats","dog","sand"]))   # False
+```
+
+---
+
+### 📊 Problem 5: Coin Change (Min Coins)
+
+```python
+from functools import lru_cache
+
+def coin_change(coins, amount):
+    @lru_cache(maxsize=None)
+    def dp(remaining):
+        if remaining == 0: return 0
+        if remaining < 0: return float('inf')
+
+        min_coins = float('inf')
+        for coin in coins:
+            result = dp(remaining - coin)
+            if result != float('inf'):
+                min_coins = min(min_coins, 1 + result)
+        return min_coins
+
+    result = dp(amount)
+    return result if result != float('inf') else -1
+
+print(coin_change([1,5,6,9], 11))   # 2  (5+6)
+print(coin_change([2], 3))          # -1 (impossible)
+```
+
+---
+
+### 🔑 Memoization: Key Patterns & Pitfalls
+
+**Two conditions for memoization to apply:**
+
+```
+1. OVERLAPPING SUBPROBLEMS — same subproblem solved multiple times
+2. OPTIMAL SUBSTRUCTURE — solution built from optimal subsolutions
+```
+
+**Cache key rules:**
+
+```python
+# Single parameter → int key
+@lru_cache(maxsize=None)
+def dp(n): ...
+
+# Multiple parameters → tuple key (lru_cache handles automatically)
+@lru_cache(maxsize=None)
+def dp(i, j, remaining): ...
+
+# List/set → must convert to hashable tuple
+@lru_cache(maxsize=None)
+def dp(i, visited_tuple): ...      # tuple, not list
+
+# Manual dict with tuple key
+memo = {}
+def dp(i, j):
+    if (i,j) in memo: return memo[(i,j)]
+    ...
+    memo[(i,j)] = result
+    return result
+```
+
+**`lru_cache` — what to know for interviews:**
+
+```python
+from functools import lru_cache, cache
+
+@lru_cache(maxsize=None)    # unlimited — use for interviews
+@lru_cache(maxsize=128)     # bounded LRU — use for memory constraints
+@cache                      # Python 3.9+ shorthand for lru_cache(maxsize=None)
+
+# Inspect cache
+print(dp.cache_info())      # CacheInfo(hits=..., misses=..., currsize=...)
+
+# Clear between test cases
+dp.cache_clear()
+```
+
+---
+
+## 2. ✂️ Pruning Techniques
+
+### What it is
+
+Pruning **eliminates branches of the search tree** before fully exploring them.
+
+**Types:**
+- **Feasibility pruning** — branch violates a hard constraint (can never be valid)
+- **Optimality pruning** — branch cannot improve on the best solution found so far
+- **Symmetry pruning** — branch is equivalent to one already explored
+
+---
+
+### 🌿 Technique 1: Constraint-Based Pruning (Feasibility)
+
+```python
+def n_queens(n):
+    result = []
+    cols, d1, d2 = set(), set(), set()
+
+    def backtrack(row):
+        if row == n:
+            result.append(list(cols))
+            return
+        for col in range(n):
+            # PRUNE: check all 3 attack conditions before recursing
+            if col in cols or (row-col) in d1 or (row+col) in d2:
+                continue                # ← prune entire subtree
+            cols.add(col); d1.add(row-col); d2.add(row+col)
+            backtrack(row + 1)
+            cols.remove(col); d1.remove(row-col); d2.remove(row+col)
+
+    backtrack(0)
+    return result
+```
+
+---
+
+### 🌿 Technique 2: Bound-Based Pruning (Optimality)
+
+Track best solution so far — prune branches that can't beat it.
+
+```python
+def knapsack_bnb(weights, values, capacity):
+    n = len(weights)
+    items = sorted(zip(values, weights), key=lambda x: x[0]/x[1], reverse=True)
+    best = [0]
+
+    def upper_bound(idx, current_val, current_weight):
+        val = current_val
+        cap = capacity - current_weight
+        for i in range(idx, n):
+            v, w = items[i]
+            if w <= cap:
+                val += v; cap -= w
+            else:
+                val += v * (cap / w)    # fractional
+                break
+        return val
+
+    def backtrack(idx, current_val, current_weight):
+        if current_weight > capacity:
+            return
+        if current_val > best[0]:
+            best[0] = current_val
+        if idx == n:
+            return
+        # PRUNE: upper bound can't beat current best
+        if upper_bound(idx, current_val, current_weight) <= best[0]:
+            return
+        v, w = items[idx]
+        backtrack(idx+1, current_val+v, current_weight+w)  # take
+        backtrack(idx+1, current_val, current_weight)      # skip
+
+    backtrack(0, 0, 0)
+    return best[0]
+```
+
+---
+
+### 🌿 Technique 3: Sorted Input + Early Break
+
+```python
+def combination_sum(candidates, target):
+    result = []
+    candidates.sort()               # ← CRITICAL: enables early break
+
+    def backtrack(start, current, remaining):
+        if remaining == 0:
+            result.append(current[:])
+            return
+        for i in range(start, len(candidates)):
+            if candidates[i] > remaining:
+                break               # ← all subsequent also too big (sorted)
+            current.append(candidates[i])
+            backtrack(i, current, remaining - candidates[i])
+            current.pop()
+
+    backtrack(0, [], target)
+    return result
+```
+
+---
+
+### 🌿 Technique 4: Duplicate Skipping
+
+```python
+def subsets_no_dup(nums):
+    result = []
+    nums.sort()
+
+    def backtrack(start, current):
+        result.append(current[:])
+        for i in range(start, len(nums)):
+            # PRUNE: skip duplicate at same level
+            if i > start and nums[i] == nums[i-1]:
+                continue
+            current.append(nums[i])
+            backtrack(i+1, current)
+            current.pop()
+
+    backtrack(0, [])
+    return result
+
+# WHY i > start and not i > 0:
+# i > start: skip second '2' only when '2' already explored at THIS level ✓
+# i > 0:     would skip even when '2' is first occurrence at this level   ✗
+```
+
+---
+
+### 🌿 Technique 5: Visited / Path Tracking
+
+```python
+def word_search(board, word):
+    rows, cols = len(board), len(board[0])
+
+    def backtrack(r, c, idx):
+        if idx == len(word): return True
+        if not (0<=r<rows and 0<=c<cols): return False
+        if board[r][c] != word[idx]: return False
+
+        temp = board[r][c]
+        board[r][c] = '#'           # mark visited IN THIS PATH
+
+        found = any(
+            backtrack(r+dr, c+dc, idx+1)
+            for dr,dc in [(0,1),(0,-1),(1,0),(-1,0)]
+        )
+
+        board[r][c] = temp          # unmark on backtrack
+        return found
+
+    return any(backtrack(r,c,0) for r in range(rows) for c in range(cols))
+```
+
+---
+
+### 🌿 Technique 6: Forward Checking (Constraint Propagation)
+
+Proactively check that remaining choices are still viable after each assignment.
+
+```python
+def sudoku_with_forward_check(board):
+    rows = [set() for _ in range(9)]
+    cols = [set() for _ in range(9)]
+    boxes = [[set() for _ in range(3)] for _ in range(3)]
+    empty = []
+
+    for r in range(9):
+        for c in range(9):
+            if board[r][c] != '.':
+                d = board[r][c]
+                rows[r].add(d); cols[c].add(d); boxes[r//3][c//3].add(d)
+            else:
+                empty.append((r,c))
+
+    def get_candidates(r, c):
+        used = rows[r] | cols[c] | boxes[r//3][c//3]
+        return set('123456789') - used  # only valid digits
+
+    def backtrack(idx):
+        if idx == len(empty): return True
+        r, c = empty[idx]
+        for d in get_candidates(r, c):  # only try valid candidates
+            rows[r].add(d); cols[c].add(d); boxes[r//3][c//3].add(d)
+            board[r][c] = d
+            if backtrack(idx+1): return True
+            rows[r].remove(d); cols[c].remove(d); boxes[r//3][c//3].remove(d)
+            board[r][c] = '.'
+        return False
+
+    backtrack(0)
+    return board
+```
+
+---
+
+### 🌿 Technique 7: Memoization + Pruning Combined
+
+```python
+from functools import lru_cache
+
+def count_paths_obstacles(grid):
+    rows, cols = len(grid), len(grid[0])
+
+    @lru_cache(maxsize=None)
+    def dp(r, c):
+        # PRUNE: out of bounds or obstacle
+        if r >= rows or c >= cols or grid[r][c] == 1:
+            return 0
+        # BASE CASE
+        if r == rows-1 and c == cols-1:
+            return 1
+        # MEMO: result cached after first computation
+        return dp(r+1, c) + dp(r, c+1)
+
+    return dp(0, 0)
+
+grid = [
+    [0, 0, 0],
+    [0, 1, 0],
+    [0, 0, 0]
+]
+print(count_paths_obstacles(grid))  # 2
+```
+
+---
+
+### 🌿 Technique 8: Iterative Deepening (IDDFS)
+
+Combines DFS memory efficiency with BFS's optimal depth-first exploration.
+
+```python
+def iddfs(root, target):
+    def dfs_limited(node, target, depth_limit, current_depth):
+        if node == target:
+            return current_depth
+        if current_depth == depth_limit:    # PRUNE: depth exceeded
+            return None
+        for neighbor in get_neighbors(node):
+            result = dfs_limited(neighbor, target, depth_limit, current_depth+1)
+            if result is not None:
+                return result
+        return None
+
+    for max_depth in range(1, 100):
+        result = dfs_limited(root, target, max_depth, 0)
+        if result is not None:
+            return result
+    return None
+
+# Memory: O(depth) — much better than BFS's O(branching^depth)
+# Time:   O(b^d) where b=branching factor, d=solution depth
+```
+
+---
+
+## ⚡ Optimization: Which Technique for Which Problem
+
+| Scenario | Technique | Mechanism |
+|---|---|---|
+| Same subproblem called repeatedly | Memoization | Cache `(args) → result` |
+| Remaining elements too large | Sort + Early Break | `if val > limit: break` |
+| Duplicate results from equal elements | Duplicate Skipping | `if i>start and nums[i]==nums[i-1]` |
+| Invalid state (wrong char, OOB) | Constraint Pruning | Check before recursing |
+| Can't beat current best answer | Bound Pruning | `if bound <= best: return` |
+| Can't reuse current path cell | Visited Marking | Mark `'#'`, unmark on backtrack |
+| Need only valid candidates | Forward Checking | Compute valid set before loop |
+| Unknown solution depth | IDDFS | Increase depth limit iteratively |
+
+## 🧠 Optimization: Key Interview Talking Points
+
+- **Memoization requires two conditions:** overlapping subproblems + optimal substructure
+- **Cache key must be hashable** — convert lists/sets to tuples
+- **Pruning acts at the call site** — the check happens *before* the recursive call
+- **Sort enables break** — O(n log n) cost, but exponential savings from pruning
+- **`i > start` not `i > 0`** — the duplicate skip condition is a common interview error
+- **Memo + Prune compound** — pruning reduces branches, memoization eliminates recomputation
+- **Always state the complexity improvement** — *"naive O(2ⁿ) becomes O(n²) with memoization because there are only n² unique subproblems"*
+
+
+
+# 🧠 DSA Interview Notes — Python
+
+> Topics: Searching · Sorting · Two Pointer Techniques
+
+---
+
+# 🔍 Searching
+
+---
+
+## 1. Linear Search
+
+### Concept
+- Traverse every element one by one until the target is found or the array ends.
+- **Time:** O(n) | **Space:** O(1)
+- Use when: array is unsorted, small datasets, or you need the first occurrence.
+
+### Interview Points
+- Simplest search — always mention it as a baseline comparison.
+- Works on **any** data structure (linked list, array, string).
+- Returns `-1` (or `None`) by convention when not found.
+
+```python
+def linear_search(arr, target):
+    for i, val in enumerate(arr):
+        if val == target:
+            return i
+    return -1
+
+# Example
+print(linear_search([4, 2, 7, 1, 9], 7))  # → 2
+print(linear_search([4, 2, 7, 1, 9], 5))  # → -1
+```
+
+---
+
+## 2. Binary Search
+
+### Concept
+- Repeatedly halve the search space on a **sorted** array.
+- **Time:** O(log n) | **Space:** O(1) iterative, O(log n) recursive
+
+### Interview Points
+- **CRITICAL:** Array must be sorted. Say this immediately in the interview.
+- Three templates interviewers love to see:
+  - `left <= right` (standard, finds exact match)
+  - `left < right` (used for boundary/first-last occurrence variants)
+- Always be careful with **integer overflow**: use `mid = left + (right - left) // 2` (same in Python, but good habit).
+- Know both iterative and recursive.
+
+```python
+# Iterative (preferred in interviews)
+def binary_search(arr, target):
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = left + (right - left) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1
+
+# Recursive
+def binary_search_rec(arr, target, left=0, right=None):
+    if right is None:
+        right = len(arr) - 1
+    if left > right:
+        return -1
+    mid = left + (right - left) // 2
+    if arr[mid] == target:
+        return mid
+    elif arr[mid] < target:
+        return binary_search_rec(arr, target, mid + 1, right)
+    else:
+        return binary_search_rec(arr, target, left, mid - 1)
+
+# Using Python's bisect
+import bisect
+arr = [1, 3, 5, 7, 9]
+idx = bisect.bisect_left(arr, 5)  # → 2
+```
+
+---
+
+## 3. Rotated Array Search
+
+### Concept
+- A sorted array has been rotated at some pivot. Find a target.
+- **Time:** O(log n) | **Space:** O(1)
+- Key insight: **one half is always sorted** after a rotation.
+
+### Interview Points
+- Two main scenarios: no duplicates (clean solution), duplicates (worst case O(n)).
+- The core trick: check which half is **monotonically sorted**, then determine if target lies in that half.
+- Common follow-up: "Find the pivot/minimum element."
+
+```python
+def search_rotated(arr, target):
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = left + (right - left) // 2
+        if arr[mid] == target:
+            return mid
+
+        # Left half is sorted
+        if arr[left] <= arr[mid]:
+            if arr[left] <= target < arr[mid]:
+                right = mid - 1
+            else:
+                left = mid + 1
+        # Right half is sorted
+        else:
+            if arr[mid] < target <= arr[right]:
+                left = mid + 1
+            else:
+                right = mid - 1
+    return -1
+
+# Examples
+print(search_rotated([4, 5, 6, 7, 0, 1, 2], 0))  # → 4
+print(search_rotated([4, 5, 6, 7, 0, 1, 2], 3))  # → -1
+print(search_rotated([1], 0))                      # → -1
+
+# With duplicates (LeetCode 81) — worst case O(n)
+def search_rotated_dups(arr, target):
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = left + (right - left) // 2
+        if arr[mid] == target:
+            return True
+        # Can't determine which side is sorted → shrink both
+        if arr[left] == arr[mid] == arr[right]:
+            left += 1
+            right -= 1
+        elif arr[left] <= arr[mid]:
+            if arr[left] <= target < arr[mid]:
+                right = mid - 1
+            else:
+                left = mid + 1
+        else:
+            if arr[mid] < target <= arr[right]:
+                left = mid + 1
+            else:
+                right = mid - 1
+    return False
+```
+
+---
+
+## 4. First / Last Occurrence
+
+### Concept
+- In a sorted array with duplicates, find the **first** or **last** index of a target.
+- **Time:** O(log n) | **Space:** O(1)
+
+### Interview Points
+- This is a **modified binary search** — don't stop at first match, keep narrowing.
+- For **first**: when found, keep going left (`right = mid - 1`), store result.
+- For **last**: when found, keep going right (`left = mid + 1`), store result.
+- Can also use to count occurrences: `last - first + 1`.
+
+```python
+def find_first(arr, target):
+    left, right = 0, len(arr) - 1
+    result = -1
+    while left <= right:
+        mid = left + (right - left) // 2
+        if arr[mid] == target:
+            result = mid       # record, then keep searching left
+            right = mid - 1
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return result
+
+def find_last(arr, target):
+    left, right = 0, len(arr) - 1
+    result = -1
+    while left <= right:
+        mid = left + (right - left) // 2
+        if arr[mid] == target:
+            result = mid       # record, then keep searching right
+            left = mid + 1
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return result
+
+def search_range(arr, target):
+    return [find_first(arr, target), find_last(arr, target)]
+
+# Count occurrences
+def count_occurrences(arr, target):
+    first = find_first(arr, target)
+    if first == -1:
+        return 0
+    return find_last(arr, target) - first + 1
+
+# Examples
+arr = [5, 7, 7, 8, 8, 10]
+print(search_range(arr, 8))          # → [3, 4]
+print(search_range(arr, 6))          # → [-1, -1]
+print(count_occurrences(arr, 7))     # → 2
+
+# Using bisect
+import bisect
+first = bisect.bisect_left(arr, 8)   # 3
+last  = bisect.bisect_right(arr, 8) - 1  # 4
+```
+
+---
+
+## 5. Peak Element
+
+### Concept
+- Find an index where `arr[i] > arr[i-1]` and `arr[i] > arr[i+1]`. Ends are treated as `-∞`.
+- **Time:** O(log n) | **Space:** O(1)
+
+### Interview Points
+- **Multiple peaks may exist** — any valid peak is acceptable.
+- Key insight: if `arr[mid] < arr[mid+1]`, a peak **must exist** on the right. If `arr[mid] < arr[mid-1]`, peak is on the left.
+- This is a non-obvious binary search — explain the invariant clearly.
+- Common variant: find the **maximum** in a bitonic (mountain) array.
+
+```python
+def find_peak(arr):
+    left, right = 0, len(arr) - 1
+    while left < right:
+        mid = left + (right - left) // 2
+        if arr[mid] < arr[mid + 1]:
+            # Ascending slope → peak is to the right
+            left = mid + 1
+        else:
+            # Descending slope → peak is at mid or to the left
+            right = mid
+    return left  # left == right == peak index
+
+# Examples
+print(find_peak([1, 2, 3, 1]))            # → 2 (value 3)
+print(find_peak([1, 2, 1, 3, 5, 6, 4]))  # → 5 (value 6) or 1 (value 2)
+
+# Mountain Array Maximum (strict single peak)
+def mountain_peak(arr):
+    left, right = 0, len(arr) - 1
+    while left < right:
+        mid = left + (right - left) // 2
+        if arr[mid] < arr[mid + 1]:
+            left = mid + 1
+        else:
+            right = mid
+    return left
+```
+
+---
+
+## 6. Square Root (Binary Search)
+
+### Concept
+- Compute `floor(√n)` without using `math.sqrt`.
+- **Time:** O(log n) | **Space:** O(1)
+
+### Interview Points
+- Great example of binary search on **answer space**, not array index.
+- Search space: `[1, n]`, condition: `mid*mid <= n`.
+- Beware of **integer overflow** — in Python it's not a problem, but mention it for Java/C++.
+- Precision variant: find sqrt to `k` decimal places using fractional binary search.
+
+```python
+def my_sqrt(n):
+    if n < 2:
+        return n
+    left, right = 1, n // 2
+    result = 1
+    while left <= right:
+        mid = left + (right - left) // 2
+        if mid * mid == n:
+            return mid
+        elif mid * mid < n:
+            result = mid       # best candidate so far
+            left = mid + 1
+        else:
+            right = mid - 1
+    return result
+
+# Examples
+print(my_sqrt(4))   # → 2
+print(my_sqrt(8))   # → 2 (floor)
+print(my_sqrt(9))   # → 3
+print(my_sqrt(0))   # → 0
+
+# Precision variant (to p decimal places)
+def sqrt_precision(n, precision=5):
+    left, right = 0.0, float(n)
+    for _ in range(200):  # enough iterations for any precision
+        mid = (left + right) / 2
+        if mid * mid > n:
+            right = mid
+        else:
+            left = mid
+    return round(left, precision)
+
+print(sqrt_precision(2))  # → 1.41421
+```
+
+---
+
+## 7. 2D Matrix Search
+
+### Concept
+
+Two common variants:
+- **Variant 1 (LeetCode 74):** Rows and columns sorted, and last element of row i < first element of row i+1. Treat as a flat 1D sorted array.
+- **Variant 2 (LeetCode 240):** Each row and column sorted independently. Use staircase search.
+
+### Interview Points
+- Immediately clarify which variant — they have different time complexities.
+- Variant 1: **O(log m\*n)** — classic binary search with index math.
+- Variant 2: **O(m + n)** — start from top-right, move left if too big, down if too small.
+- Index conversion for Variant 1: `row = mid // cols`, `col = mid % cols`.
+
+```python
+# Variant 1: Fully sorted matrix (treat as 1D)
+def search_matrix_v1(matrix, target):
+    if not matrix or not matrix[0]:
+        return False
+    rows, cols = len(matrix), len(matrix[0])
+    left, right = 0, rows * cols - 1
+    while left <= right:
+        mid = left + (right - left) // 2
+        val = matrix[mid // cols][mid % cols]  # ← key index conversion
+        if val == target:
+            return True
+        elif val < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return False
+
+# Variant 2: Row and column sorted (staircase search)
+def search_matrix_v2(matrix, target):
+    if not matrix or not matrix[0]:
+        return False
+    row, col = 0, len(matrix[0]) - 1  # start top-right
+    while row < len(matrix) and col >= 0:
+        val = matrix[row][col]
+        if val == target:
+            return True
+        elif val > target:
+            col -= 1   # too big → go left
+        else:
+            row += 1   # too small → go down
+    return False
+
+# Examples
+m1 = [[1,3,5,7],[10,11,16,20],[23,30,34,60]]
+print(search_matrix_v1(m1, 3))    # → True
+print(search_matrix_v1(m1, 13))   # → False
+
+m2 = [[1,4,7,11],[2,5,8,12],[3,6,9,16],[10,13,14,17]]
+print(search_matrix_v2(m2, 5))    # → True
+print(search_matrix_v2(m2, 20))   # → False
+```
+
+---
+
+## 8. Search Insert Position
+
+### Concept
+- Given a sorted array and a target, return the index to insert it (maintaining sort order). If target exists, return its index.
+- **Time:** O(log n) | **Space:** O(1)
+- This is exactly `bisect_left`.
+
+### Interview Points
+- Clean, elegant binary search — `left` pointer naturally lands at the insert position.
+- When the loop ends, `left` is always the answer — explain **why**: `left` is where the target would go to keep the array sorted.
+- Relate to `bisect.bisect_left` — shows Python library awareness.
+
+```python
+def search_insert(arr, target):
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = left + (right - left) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return left  # left == insertion point
+
+# Examples
+print(search_insert([1, 3, 5, 6], 5))  # → 2 (found)
+print(search_insert([1, 3, 5, 6], 2))  # → 1 (insert between 1 and 3)
+print(search_insert([1, 3, 5, 6], 7))  # → 4 (after last)
+print(search_insert([1, 3, 5, 6], 0))  # → 0 (before first)
+
+# Equivalent using bisect
+import bisect
+print(bisect.bisect_left([1, 3, 5, 6], 2))  # → 1
+```
+
+---
+
+## 🧠 Searching — Cheat Sheet
+
+| Problem | Algorithm | Time | Space | Key Trick |
+|---|---|---|---|---|
+| Linear Search | Sequential scan | O(n) | O(1) | Works unsorted |
+| Binary Search | Halve search space | O(log n) | O(1) | Must be sorted |
+| Rotated Array | Check which half sorted | O(log n) | O(1) | One half always sorted |
+| First/Last Occurrence | Binary + keep searching | O(log n) | O(1) | Don't stop on match |
+| Peak Element | Compare mid vs mid+1 | O(log n) | O(1) | One peak guaranteed |
+| Square Root | Binary on answer space | O(log n) | O(1) | Search `[1, n//2]` |
+| 2D Matrix (fully sorted) | Flat binary search | O(log mn) | O(1) | `mid // cols`, `mid % cols` |
+| 2D Matrix (row/col sorted) | Staircase from top-right | O(m+n) | O(1) | Eliminate row or column |
+| Search Insert Position | Binary, return `left` | O(log n) | O(1) | `left` = insert point |
+
+---
+
+## ⚡ Common Binary Search Bugs to Avoid
+
+```python
+# ❌ Wrong: can cause infinite loop when left+1 == right
+mid = (left + right) // 2
+
+# ✅ Correct: always safe
+mid = left + (right - left) // 2
+
+# ❌ Off-by-one: misses last element
+while left < right  →  use left <= right for exact match problems
+
+# ❌ Forgetting that left IS the answer in insert-position style problems
+
+# ❌ Not handling empty array
+if not arr: return -1  # always add this guard
+```
+
+---
+
+## 🔗 Binary Search Template Summary
+
+```python
+# Template 1: Exact match
+left, right = 0, len(arr) - 1
+while left <= right:
+    mid = left + (right - left) // 2
+    if arr[mid] == target: return mid
+    elif arr[mid] < target: left = mid + 1
+    else: right = mid - 1
+return -1
+
+# Template 2: Left boundary (first occurrence / insert position)
+left, right = 0, len(arr)        # note: right = len(arr)
+while left < right:               # note: strict <
+    mid = left + (right - left) // 2
+    if arr[mid] < target: left = mid + 1
+    else: right = mid
+return left
+
+# Template 3: Right boundary (last occurrence)
+left, right = 0, len(arr)
+while left < right:
+    mid = left + (right - left) // 2
+    if arr[mid] <= target: left = mid + 1
+    else: right = mid
+return left - 1
+```
+
+---
+---
+
+# 🔃 Sorting
+
+---
+
+## 1. Bubble Sort
+
+### Concept
+- Repeatedly swap adjacent elements if they're in the wrong order. Largest element "bubbles up" to the end each pass.
+- **Time:** O(n²) avg/worst | O(n) best (already sorted) | **Space:** O(1)
+- **Stable:** ✅
+
+### Interview Points
+- Almost never used in practice — interviewers ask it to test fundamentals.
+- Key optimization: track if **any swap occurred** in a pass — if not, array is already sorted → early exit.
+- Each full pass guarantees the largest unsorted element is in its final position → inner loop shrinks each iteration.
+
+```python
+def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        swapped = False                        # ← optimization flag
+        for j in range(0, n - i - 1):         # ← shrinks by i each pass
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+                swapped = True
+        if not swapped:                        # ← early exit if sorted
+            break
+    return arr
+
+# Examples
+print(bubble_sort([64, 34, 25, 12, 22, 11, 90]))
+# → [11, 12, 22, 25, 34, 64, 90]
+
+print(bubble_sort([1, 2, 3, 4, 5]))  # O(n) — exits after 1 pass
+# → [1, 2, 3, 4, 5]
+```
+
+---
+
+## 2. Selection Sort
+
+### Concept
+- Find the **minimum** element in the unsorted portion, swap it to the front. Repeat.
+- **Time:** O(n²) always (no early exit) | **Space:** O(1)
+- **Stable:** ❌ (can be made stable but not by default)
+
+### Interview Points
+- Makes exactly **n-1 swaps** — best algorithm when swap cost is very high (e.g., writing to flash memory).
+- Unlike bubble sort, **no early exit** possible — always does O(n²) comparisons regardless of input.
+- Not stable: swapping minimum into place can disrupt order of equal elements.
+
+```python
+def selection_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        min_idx = i                            # assume current position is min
+        for j in range(i + 1, n):
+            if arr[j] < arr[min_idx]:
+                min_idx = j                    # find actual minimum
+        arr[i], arr[min_idx] = arr[min_idx], arr[i]  # swap into place
+    return arr
+
+# Examples
+print(selection_sort([64, 25, 12, 22, 11]))
+# → [11, 12, 22, 25, 64]
+
+# Demonstrating instability: equal keys can swap
+# [(3,a), (3,b), (1,c)] → after pass 1: [(1,c), (3,b), (3,a)]
+# relative order of (3,a) and (3,b) is lost
+```
+
+---
+
+## 3. Insertion Sort
+
+### Concept
+- Build a sorted subarray one element at a time. Pick next element, shift larger elements right, insert in correct position.
+- **Time:** O(n²) avg/worst | O(n) best (nearly sorted) | **Space:** O(1)
+- **Stable:** ✅
+
+### Interview Points
+- **Best choice for small arrays (n < ~20)** — low constant factor, cache-friendly.
+- Used as a subroutine in **TimSort** (Python's built-in sort) for small runs.
+- Excellent for **nearly sorted** data — nearly O(n) in that case.
+- Think of it like sorting playing cards in your hand.
+
+```python
+def insertion_sort(arr):
+    for i in range(1, len(arr)):
+        key = arr[i]                           # element to be inserted
+        j = i - 1
+        while j >= 0 and arr[j] > key:        # shift larger elements right
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key                       # insert in correct position
+    return arr
+
+# Examples
+print(insertion_sort([12, 11, 13, 5, 6]))
+# → [5, 6, 11, 12, 13]
+
+# Nearly sorted — almost O(n)
+print(insertion_sort([1, 2, 4, 3, 5]))
+# → [1, 2, 3, 4, 5]
+
+# Binary Insertion Sort variant — fewer comparisons but same shifts
+import bisect
+def binary_insertion_sort(arr):
+    for i in range(1, len(arr)):
+        key = arr[i]
+        pos = bisect.bisect_left(arr, key, 0, i)  # O(log i) comparisons
+        arr[pos+1:i+1] = arr[pos:i]               # O(i) shifts still
+        arr[pos] = key
+    return arr
+```
+
+---
+
+## 4. Merge Sort
+
+### Concept
+- Divide array in half recursively until size 1, then **merge** sorted halves back together.
+- **Time:** O(n log n) always | **Space:** O(n) auxiliary
+- **Stable:** ✅
+
+### Interview Points
+- **Guaranteed O(n log n)** — unlike quicksort, no bad worst case.
+- Preferred for **linked lists** (no random access needed, O(1) extra space possible).
+- Preferred for **external sorting** (data too large for RAM — merge from disk).
+- The `merge` step is the key — know it cold. Two pointers, compare, append remainder.
+- Common follow-up: **count inversions** (modification of merge sort).
+
+```python
+def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    mid = len(arr) // 2
+    left  = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+    return merge(left, right)
+
+def merge(left, right):
+    result = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:               # ← <= ensures stability
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+    result.extend(left[i:])                   # append remaining
+    result.extend(right[j:])
+    return result
+
+# In-place merge (avoids slicing overhead)
+def merge_sort_inplace(arr, left=0, right=None):
+    if right is None:
+        right = len(arr) - 1
+    if left >= right:
+        return
+    mid = left + (right - left) // 2
+    merge_sort_inplace(arr, left, mid)
+    merge_sort_inplace(arr, mid + 1, right)
+    merge_inplace(arr, left, mid, right)
+
+def merge_inplace(arr, left, mid, right):
+    L = arr[left:mid+1]
+    R = arr[mid+1:right+1]
+    i = j = 0
+    k = left
+    while i < len(L) and j < len(R):
+        if L[i] <= R[j]:
+            arr[k] = L[i]; i += 1
+        else:
+            arr[k] = R[j]; j += 1
+        k += 1
+    while i < len(L): arr[k] = L[i]; i += 1; k += 1
+    while j < len(R): arr[k] = R[j]; j += 1; k += 1
+
+# Count Inversions (classic merge sort variant)
+def count_inversions(arr):
+    if len(arr) <= 1:
+        return arr, 0
+    mid = len(arr) // 2
+    left,  l_inv = count_inversions(arr[:mid])
+    right, r_inv = count_inversions(arr[mid:])
+    merged, split_inv = merge_count(left, right)
+    return merged, l_inv + r_inv + split_inv
+
+def merge_count(left, right):
+    result, count, i, j = [], 0, 0, 0
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i]); i += 1
+        else:
+            count += len(left) - i    # ← all remaining left elements form inversions
+            result.append(right[j]); j += 1
+    result.extend(left[i:]); result.extend(right[j:])
+    return result, count
+
+print(merge_sort([38, 27, 43, 3, 9, 82, 10]))
+# → [3, 9, 10, 27, 38, 43, 82]
+_, inv = count_inversions([2, 4, 1, 3, 5])
+print(inv)  # → 3
+```
+
+---
+
+## 5. Quick Sort
+
+### Concept
+- Pick a **pivot**, partition array so elements < pivot are left, > pivot are right. Recurse.
+- **Time:** O(n log n) avg | O(n²) worst (bad pivot) | **Space:** O(log n) avg stack
+- **Stable:** ❌
+
+### Interview Points
+- **Fastest in practice** for in-memory sorting due to cache efficiency and low constant factor.
+- Worst case O(n²) happens when pivot is always min/max (sorted/reverse-sorted input).
+- **Three pivot strategies:**
+  - Last element (naive, bad on sorted input)
+  - Random pivot (avoids adversarial inputs)
+  - Median-of-three (robust, used in practice)
+- **Lomuto vs Hoare partition** — know both, Hoare does fewer swaps.
+- **3-way partition** (Dutch National Flag) — handles duplicates efficiently → O(n) when all elements equal.
+
+```python
+import random
+
+# Lomuto partition scheme
+def quick_sort_lomuto(arr, low=0, high=None):
+    if high is None: high = len(arr) - 1
+    if low < high:
+        pi = partition_lomuto(arr, low, high)
+        quick_sort_lomuto(arr, low, pi - 1)
+        quick_sort_lomuto(arr, pi + 1, high)
+
+def partition_lomuto(arr, low, high):
+    pivot = arr[high]                          # pivot = last element
+    i = low - 1                               # i tracks smaller region
+    for j in range(low, high):
+        if arr[j] <= pivot:
+            i += 1
+            arr[i], arr[j] = arr[j], arr[i]
+    arr[i+1], arr[high] = arr[high], arr[i+1]
+    return i + 1
+
+# Hoare partition scheme (more efficient — fewer swaps)
+def quick_sort_hoare(arr, low=0, high=None):
+    if high is None: high = len(arr) - 1
+    if low < high:
+        pi = partition_hoare(arr, low, high)
+        quick_sort_hoare(arr, low, pi)
+        quick_sort_hoare(arr, pi + 1, high)
+
+def partition_hoare(arr, low, high):
+    pivot = arr[low + (high - low) // 2]      # middle element as pivot
+    i, j = low - 1, high + 1
+    while True:
+        i += 1
+        while arr[i] < pivot: i += 1
+        j -= 1
+        while arr[j] > pivot: j -= 1
+        if i >= j: return j
+        arr[i], arr[j] = arr[j], arr[i]
+
+# Randomized quicksort (best for interviews)
+def quick_sort_random(arr, low=0, high=None):
+    if high is None: high = len(arr) - 1
+    if low < high:
+        rand_idx = random.randint(low, high)
+        arr[rand_idx], arr[high] = arr[high], arr[rand_idx]  # swap random to end
+        pi = partition_lomuto(arr, low, high)
+        quick_sort_random(arr, low, pi - 1)
+        quick_sort_random(arr, pi + 1, high)
+
+# 3-way partition — Dutch National Flag (handles duplicates perfectly)
+def quick_sort_3way(arr, low=0, high=None):
+    if high is None: high = len(arr) - 1
+    if low >= high: return
+    pivot = arr[low + (high - low) // 2]
+    lt, gt = low, high
+    i = low
+    while i <= gt:
+        if arr[i] < pivot:
+            arr[lt], arr[i] = arr[i], arr[lt]
+            lt += 1; i += 1
+        elif arr[i] > pivot:
+            arr[gt], arr[i] = arr[i], arr[gt]
+            gt -= 1                             # don't increment i — recheck
+        else:
+            i += 1
+    # arr[low..lt-1] < pivot, arr[lt..gt] == pivot, arr[gt+1..high] > pivot
+    quick_sort_3way(arr, low, lt - 1)
+    quick_sort_3way(arr, gt + 1, high)
+
+arr = [10, 7, 8, 9, 1, 5]
+quick_sort_lomuto(arr)
+print(arr)  # → [1, 5, 7, 8, 9, 10]
+
+arr = [3, 3, 3, 3, 1, 2]
+quick_sort_3way(arr)
+print(arr)  # → [1, 2, 3, 3, 3, 3]
+```
+
+---
+
+## 6. Heap Sort
+
+### Concept
+- Build a **max-heap**, then repeatedly extract the maximum (swap root with last, heapify down).
+- **Time:** O(n log n) always | **Space:** O(1) — in-place
+- **Stable:** ❌
+
+### Interview Points
+- Only comparison sort that is **both O(n log n) worst case AND O(1) space**.
+- Two phases: **Build heap** O(n) + **Extract** n times × O(log n) = O(n log n).
+- Build heap starts from `n//2 - 1` (last non-leaf) — not from root. This is O(n) not O(n log n).
+- Not cache-friendly → slower than quicksort/mergesort in practice despite same big-O.
+- Know `heapify` (sift down) cold — it's the core operation.
+
+```python
+def heap_sort(arr):
+    n = len(arr)
+
+    # Phase 1: Build max-heap — O(n)
+    # Start from last non-leaf node and sift down
+    for i in range(n // 2 - 1, -1, -1):
+        heapify(arr, n, i)
+
+    # Phase 2: Extract elements — O(n log n)
+    for i in range(n - 1, 0, -1):
+        arr[0], arr[i] = arr[i], arr[0]        # move current max to end
+        heapify(arr, i, 0)                     # restore heap on reduced size
+
+    return arr
+
+def heapify(arr, n, i):
+    """Sift down: ensure subtree rooted at i is a max-heap."""
+    largest = i
+    left    = 2 * i + 1
+    right   = 2 * i + 2
+
+    if left  < n and arr[left]  > arr[largest]: largest = left
+    if right < n and arr[right] > arr[largest]: largest = right
+
+    if largest != i:
+        arr[i], arr[largest] = arr[largest], arr[i]
+        heapify(arr, n, largest)               # recursively fix the affected subtree
+
+# Examples
+print(heap_sort([12, 11, 13, 5, 6, 7]))
+# → [5, 6, 7, 11, 12, 13]
+
+# Using Python's heapq (min-heap) for reference
+import heapq
+def heap_sort_builtin(arr):
+    heapq.heapify(arr)                         # O(n) build min-heap
+    return [heapq.heappop(arr) for _ in arr]   # O(n log n) extract
+
+# Heap relationships (0-indexed):
+# parent(i)      = (i - 1) // 2
+# left_child(i)  = 2 * i + 1
+# right_child(i) = 2 * i + 2
+```
+
+---
+
+## 7. Counting Sort
+
+### Concept
+- Count the frequency of each element, compute cumulative counts, then place elements in output.
+- **Time:** O(n + k) where k = range of values | **Space:** O(n + k)
+- **Stable:** ✅ (when implemented correctly with cumulative counts)
+
+### Interview Points
+- **Non-comparison sort** — breaks the O(n log n) lower bound.
+- Only works on **integers** (or items mappable to integers) within a known bounded range.
+- If k >> n, it's worse than comparison sorts — always state this tradeoff.
+- Foundation for **Radix Sort**.
+- Stable version: use cumulative count and fill from **right to left**.
+
+```python
+def counting_sort(arr):
+    if not arr: return arr
+    max_val = max(arr)
+    min_val = min(arr)
+    range_val = max_val - min_val + 1
+
+    # Count frequencies
+    count = [0] * range_val
+    for val in arr:
+        count[val - min_val] += 1
+
+    # Reconstruct (simple version)
+    result = []
+    for i, freq in enumerate(count):
+        result.extend([i + min_val] * freq)
+    return result
+
+# Stable version (preserves order of equal elements)
+def counting_sort_stable(arr, max_val=None):
+    if not arr: return arr
+    if max_val is None: max_val = max(arr)
+
+    count = [0] * (max_val + 1)
+    for val in arr:
+        count[val] += 1
+
+    # Cumulative count — count[i] = number of elements ≤ i
+    for i in range(1, len(count)):
+        count[i] += count[i - 1]
+
+    output = [0] * len(arr)
+    for val in reversed(arr):                  # ← right to left ensures stability
+        output[count[val] - 1] = val
+        count[val] -= 1
+    return output
+
+# Examples
+print(counting_sort([4, 2, 2, 8, 3, 3, 1]))
+# → [1, 2, 2, 3, 3, 4, 8]
+
+print(counting_sort([-2, -3, 0, 1, -1]))      # handles negatives via min offset
+# → [-3, -2, -1, 0, 1]
+```
+
+---
+
+## 8. Radix Sort
+
+### Concept
+- Sort integers digit by digit from **least significant** to most significant digit (LSD radix sort), using counting sort as a stable subroutine.
+- **Time:** O(d × (n + k)) where d = digits, k = base (usually 10) | **Space:** O(n + k)
+- **Stable:** ✅
+
+### Interview Points
+- Another **non-comparison sort** — O(n) when d and k are constants.
+- **LSD (Least Significant Digit):** Sort from rightmost digit — standard, stable.
+- **MSD (Most Significant Digit):** Sort from leftmost — used for strings, recursive.
+- Works on integers, fixed-length strings, dates — **not** floating point directly.
+- Key insight: **must use a stable sort** at each digit position (counting sort is used).
+- For 32-bit integers: d = 10 digits, so effectively O(10n) = O(n).
+
+```python
+def radix_sort(arr):
+    if not arr: return arr
+
+    max_val = max(abs(x) for x in arr)
+
+    exp = 1
+    while max_val // exp > 0:
+        counting_sort_by_digit(arr, exp)
+        exp *= 10
+    return arr
+
+def counting_sort_by_digit(arr, exp):
+    n = len(arr)
+    output = [0] * n
+    count  = [0] * 10                          # digits 0-9
+
+    for val in arr:
+        digit = (val // exp) % 10
+        count[digit] += 1
+
+    # Cumulative count
+    for i in range(1, 10):
+        count[i] += count[i - 1]
+
+    # Fill output right to left (stability)
+    for i in range(n - 1, -1, -1):
+        digit = (arr[i] // exp) % 10
+        output[count[digit] - 1] = arr[i]
+        count[digit] -= 1
+
+    arr[:] = output                            # in-place update
+
+# Full version handling negatives
+def radix_sort_full(arr):
+    if not arr: return arr
+    negatives = sorted([-x for x in arr if x < 0])  # treat as positives
+    positives = [x for x in arr if x >= 0]
+
+    def _radix(a):
+        if not a: return a
+        max_val = max(a)
+        exp = 1
+        while max_val // exp > 0:
+            counting_sort_by_digit(a, exp)
+            exp *= 10
+        return a
+
+    _radix(negatives)
+    _radix(positives)
+    return [-x for x in reversed(negatives)] + positives
+
+# Examples
+arr = [170, 45, 75, 90, 802, 24, 2, 66]
+print(radix_sort(arr))
+# → [2, 24, 45, 66, 75, 90, 170, 802]
+```
+
+---
+
+## 9. Bucket Sort
+
+### Concept
+- Distribute elements into **buckets** based on value range, sort each bucket individually (usually insertion sort), then concatenate.
+- **Time:** O(n + k) avg | O(n²) worst (all elements in one bucket) | **Space:** O(n + k)
+- **Stable:** ✅ (if stable sort used within buckets)
+
+### Interview Points
+- Best for **uniformly distributed** floating-point numbers in `[0, 1)`.
+- Works great when input is drawn from a **known, bounded, roughly uniform** distribution.
+- Number of buckets is a tunable parameter — typically `n` buckets for `n` elements.
+- Generalizes to integers by mapping to bucket index: `bucket_idx = int(val / max_val * n)`.
+- Worst case still O(n²) if distribution is skewed — always mention this.
+
+```python
+def bucket_sort(arr):
+    if not arr: return arr
+    n = len(arr)
+
+    # Create n empty buckets
+    buckets = [[] for _ in range(n)]
+
+    max_val = max(arr)
+    min_val = min(arr)
+    range_val = max_val - min_val
+
+    # Distribute elements into buckets
+    for val in arr:
+        if range_val == 0:
+            idx = 0
+        else:
+            idx = int((val - min_val) / range_val * (n - 1))
+        buckets[idx].append(val)
+
+    # Sort each bucket and concatenate
+    result = []
+    for bucket in buckets:
+        insertion_sort_bucket(bucket)          # insertion sort works well for small buckets
+        result.extend(bucket)
+    return result
+
+def insertion_sort_bucket(arr):
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i - 1
+        while j >= 0 and arr[j] > key:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key
+
+# Classic use case: floats in [0, 1)
+def bucket_sort_floats(arr):
+    n = len(arr)
+    buckets = [[] for _ in range(n)]
+    for val in arr:
+        idx = int(val * n)                     # maps [0,1) to [0, n-1]
+        idx = min(idx, n - 1)                  # clamp for val == 1.0
+        buckets[idx].append(val)
+    result = []
+    for bucket in buckets:
+        result.extend(sorted(bucket))
+    return result
+
+# Examples
+print(bucket_sort([64, 34, 25, 12, 22, 11, 90]))
+# → [11, 12, 22, 25, 34, 64, 90]
+
+floats = [0.78, 0.17, 0.39, 0.26, 0.72, 0.94, 0.21, 0.12]
+print(bucket_sort_floats(floats))
+# → [0.12, 0.17, 0.21, 0.26, 0.39, 0.72, 0.78, 0.94]
+```
+
+---
+
+## 🧠 Sorting — Cheat Sheet
+
+| Algorithm | Best | Average | Worst | Space | Stable | Best Use Case |
+|---|---|---|---|---|---|---|
+| Bubble Sort | O(n) | O(n²) | O(n²) | O(1) | ✅ | Teaching only |
+| Selection Sort | O(n²) | O(n²) | O(n²) | O(1) | ❌ | Minimum swaps needed |
+| Insertion Sort | O(n) | O(n²) | O(n²) | O(1) | ✅ | Small / nearly sorted |
+| Merge Sort | O(n log n) | O(n log n) | O(n log n) | O(n) | ✅ | Linked lists, external sort |
+| Quick Sort | O(n log n) | O(n log n) | O(n²) | O(log n) | ❌ | General-purpose (fastest avg) |
+| Heap Sort | O(n log n) | O(n log n) | O(n log n) | O(1) | ❌ | O(n log n) + O(1) space |
+| Counting Sort | O(n+k) | O(n+k) | O(n+k) | O(n+k) | ✅ | Small integer range |
+| Radix Sort | O(dn) | O(dn) | O(dn) | O(n+k) | ✅ | Fixed-width integers/strings |
+| Bucket Sort | O(n+k) | O(n+k) | O(n²) | O(n+k) | ✅ | Uniform float distribution |
+
+---
+
+## ⚡ Sorting — Algorithm Decision Framework
+
+```
+Input is integers with small range (k << n²)?
+  └─ Yes → Counting Sort or Radix Sort
+
+Input is floats uniformly in [0,1)?
+  └─ Yes → Bucket Sort
+
+Need guaranteed O(n log n) worst case?
+  ├─ Space is no concern → Merge Sort (stable)
+  └─ Must be in-place → Heap Sort
+
+General purpose, in-memory, speed matters most?
+  └─ Quick Sort (randomized pivot)
+
+Linked list?
+  └─ Merge Sort (no random access needed)
+
+Small array (n < 20) or nearly sorted?
+  └─ Insertion Sort
+
+External sorting (data on disk)?
+  └─ Merge Sort
+```
+
+---
+
+## 🔗 Python Built-in Sort
+
+```python
+# Python uses TimSort — hybrid of Merge Sort + Insertion Sort
+# O(n log n) worst case, O(n) best case, stable, O(n) space
+
+arr = [3, 1, 4, 1, 5, 9, 2, 6]
+arr.sort()                          # in-place, returns None
+new = sorted(arr)                   # returns new list
+
+# Custom key — sort by second element of tuple
+pairs = [(1, 'b'), (2, 'a'), (3, 'c')]
+pairs.sort(key=lambda x: x[1])
+
+# Reverse sort
+arr.sort(reverse=True)
+
+# Sort objects by attribute
+from functools import cmp_to_key
+def compare(a, b): return a - b
+arr.sort(key=cmp_to_key(compare))
+
+# TimSort details — worth mentioning in interviews:
+# - Finds natural runs (already sorted subsequences)
+# - Merges runs using merge sort
+# - Uses insertion sort for runs shorter than ~64 elements
+# - This is why it's O(n) on already-sorted input
+```
+
+---
+---
+
+# 👉👈 Two Pointer Techniques
+
+---
+
+## 1. Two Sum / Three Sum
+
+### Concept
+- **Two Sum (sorted):** Place one pointer at start, one at end. If sum too small → move left right. If too large → move right left.
+- **Three Sum:** Fix one element, run two-pointer two-sum on the remainder.
+- **Time:** Two Sum O(n log n) sort + O(n) scan = O(n log n) | Three Sum O(n²) | **Space:** O(1) extra (excluding output)
+
+### Interview Points
+- **Always clarify:** return indices or values? unique pairs only? sorted input assumed?
+- Two Sum on **unsorted** array → use a hashmap for O(n) — two pointer only works on sorted.
+- Three Sum: sort first, then for each fixed element skip duplicates **at two levels**: the outer loop and inner pointers.
+- Key duplicate-skip pattern: `while left < right and arr[left] == arr[left-1]: left += 1`
+- Common follow-ups: **Four Sum** (two nested loops + two pointer), **Two Sum closest to target**, **count pairs**.
+
+```python
+# ── Two Sum (sorted array) ─────────────────────────────────────────
+def two_sum_sorted(arr, target):
+    left, right = 0, len(arr) - 1
+    while left < right:
+        s = arr[left] + arr[right]
+        if s == target:
+            return [left, right]
+        elif s < target:
+            left += 1
+        else:
+            right -= 1
+    return []
+
+# Two Sum (unsorted) — hashmap O(n), return original indices
+def two_sum_unsorted(arr, target):
+    seen = {}                                  # val → index
+    for i, val in enumerate(arr):
+        complement = target - val
+        if complement in seen:
+            return [seen[complement], i]
+        seen[val] = i
+    return []
+
+# ── Two Sum — all unique pairs ─────────────────────────────────────
+def two_sum_all_pairs(arr, target):
+    arr.sort()
+    result = []
+    left, right = 0, len(arr) - 1
+    while left < right:
+        s = arr[left] + arr[right]
+        if s == target:
+            result.append([arr[left], arr[right]])
+            while left < right and arr[left]  == arr[left + 1]:  left  += 1
+            while left < right and arr[right] == arr[right - 1]: right -= 1
+            left += 1; right -= 1
+        elif s < target:
+            left += 1
+        else:
+            right -= 1
+    return result
+
+# ── Three Sum ──────────────────────────────────────────────────────
+def three_sum(arr):
+    arr.sort()
+    result = []
+    for i in range(len(arr) - 2):
+        # Skip duplicate fixed elements
+        if i > 0 and arr[i] == arr[i - 1]:
+            continue
+        left, right = i + 1, len(arr) - 1
+        while left < right:
+            s = arr[i] + arr[left] + arr[right]
+            if s == 0:
+                result.append([arr[i], arr[left], arr[right]])
+                while left < right and arr[left]  == arr[left + 1]:  left  += 1
+                while left < right and arr[right] == arr[right - 1]: right -= 1
+                left += 1; right -= 1
+            elif s < 0:
+                left += 1
+            else:
+                right -= 1
+    return result
+
+# ── Three Sum Closest ──────────────────────────────────────────────
+def three_sum_closest(arr, target):
+    arr.sort()
+    closest = float('inf')
+    for i in range(len(arr) - 2):
+        left, right = i + 1, len(arr) - 1
+        while left < right:
+            s = arr[i] + arr[left] + arr[right]
+            if abs(s - target) < abs(closest - target):
+                closest = s
+            if s < target:   left += 1
+            elif s > target: right -= 1
+            else:            return s           # exact match
+    return closest
+
+# ── Four Sum ──────────────────────────────────────────────────────
+def four_sum(arr, target):
+    arr.sort()
+    result = []
+    n = len(arr)
+    for i in range(n - 3):
+        if i > 0 and arr[i] == arr[i-1]: continue
+        for j in range(i + 1, n - 2):
+            if j > i + 1 and arr[j] == arr[j-1]: continue
+            left, right = j + 1, n - 1
+            while left < right:
+                s = arr[i] + arr[j] + arr[left] + arr[right]
+                if s == target:
+                    result.append([arr[i], arr[j], arr[left], arr[right]])
+                    while left < right and arr[left]  == arr[left + 1]:  left  += 1
+                    while left < right and arr[right] == arr[right - 1]: right -= 1
+                    left += 1; right -= 1
+                elif s < target: left += 1
+                else:            right -= 1
+    return result
+
+# Examples
+print(two_sum_sorted([2, 7, 11, 15], 9))         # → [0, 1]
+print(two_sum_unsorted([3, 2, 4], 6))             # → [1, 2]
+print(three_sum([-1, 0, 1, 2, -1, -4]))           # → [[-1,-1,2],[-1,0,1]]
+print(three_sum_closest([-1, 2, 1, -4], 1))       # → 2
+print(four_sum([1, 0, -1, 0, -2, 2], 0))
+# → [[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]
+```
+
+---
+
+## 2. Container With Most Water
+
+### Concept
+- Given heights array, find two lines that together with the x-axis form a container holding the most water.
+- Area = `min(height[left], height[right]) × (right - left)`
+- **Time:** O(n) | **Space:** O(1)
+
+### Interview Points
+- Classic greedy two-pointer proof: always move the **shorter** side inward.
+- Reasoning: if you move the taller side, width decreases AND height is still bounded by the shorter — you can only lose. Moving the shorter side at least gives a chance at a taller boundary.
+- Interviewers love asking: **"why move the shorter pointer?"** — be ready to explain the invariant.
+- Common mistake: moving both pointers, or moving the taller one.
+- Variant: **Trapping Rain Water** is different — it accounts for water trapped between bars (uses stack or two-pointer with running max).
+
+```python
+# ── Container With Most Water ─────────────────────────────────────
+def max_area(height):
+    left, right = 0, len(height) - 1
+    max_water = 0
+    while left < right:
+        h = min(height[left], height[right])
+        w = right - left
+        max_water = max(max_water, h * w)
+        # Move the shorter side — only way to potentially increase area
+        if height[left] < height[right]:
+            left += 1
+        else:
+            right -= 1
+    return max_water
+
+# ── Trapping Rain Water (classic variant) ─────────────────────────
+# Water at i = min(max_left, max_right) - height[i]
+def trap_rain_water(height):
+    if not height: return 0
+    left, right = 0, len(height) - 1
+    left_max = right_max = 0
+    water = 0
+    while left < right:
+        if height[left] < height[right]:
+            if height[left] >= left_max:
+                left_max = height[left]
+            else:
+                water += left_max - height[left]   # trapped water at left
+            left += 1
+        else:
+            if height[right] >= right_max:
+                right_max = height[right]
+            else:
+                water += right_max - height[right] # trapped water at right
+            right -= 1
+    return water
+
+# Trap Rain Water — prefix/suffix max approach (clearer, O(n) space)
+def trap_rain_water_v2(height):
+    n = len(height)
+    left_max  = [0] * n
+    right_max = [0] * n
+    left_max[0]   = height[0]
+    right_max[-1] = height[-1]
+    for i in range(1, n):
+        left_max[i] = max(left_max[i-1], height[i])
+    for i in range(n-2, -1, -1):
+        right_max[i] = max(right_max[i+1], height[i])
+    return sum(min(left_max[i], right_max[i]) - height[i] for i in range(n))
+
+# Examples
+print(max_area([1, 8, 6, 2, 5, 4, 8, 3, 7]))        # → 49
+print(max_area([1, 1]))                               # → 1
+print(trap_rain_water([0,1,0,2,1,0,1,3,2,1,2,1]))    # → 6
+print(trap_rain_water_v2([4,2,0,3,2,5]))              # → 9
+```
+
+---
+
+## 3. Dutch National Flag Algorithm
+
+### Concept
+- Sort an array of 0s, 1s, and 2s **in-place in a single pass**.
+- Three pointers: `low` (boundary of 0s), `mid` (current), `high` (boundary of 2s).
+- **Time:** O(n) | **Space:** O(1)
+
+### Interview Points
+- Invented by **Dijkstra** — named after the Dutch flag (3 color bands).
+- Core invariant at all times:
+  - `arr[0..low-1]` → all 0s
+  - `arr[low..mid-1]` → all 1s
+  - `arr[mid..high]` → unknown
+  - `arr[high+1..n-1]` → all 2s
+- When swapping with `high`, **don't increment `mid`** — the swapped element is unknown.
+- When swapping with `low`, **do increment `mid`** — swapped element is guaranteed to be 1.
+- This is the foundation of **3-way quicksort partition**.
+- Follow-up: sort array with k distinct values → generalize with counting sort or recursive DNF.
+
+```python
+# ── Dutch National Flag ───────────────────────────────────────────
+def sort_colors(arr):
+    low = 0                                    # next position for 0
+    mid = 0                                    # current element
+    high = len(arr) - 1                        # next position for 2
+
+    while mid <= high:
+        if arr[mid] == 0:
+            arr[low], arr[mid] = arr[mid], arr[low]
+            low += 1
+            mid += 1                           # ← safe: arr[low] was 1
+        elif arr[mid] == 1:
+            mid += 1                           # 1 is already in place
+        else:                                  # arr[mid] == 2
+            arr[mid], arr[high] = arr[high], arr[mid]
+            high -= 1                          # ← don't increment mid: recheck
+
+    return arr
+
+# Step-by-step trace for [2,0,2,1,1,0]:
+# low=0 mid=0 high=5: arr[0]=2 → swap(0,5) → [0,0,2,1,1,2], high=4
+# low=0 mid=0 high=4: arr[0]=0 → swap(0,0) → [0,0,2,1,1,2], low=1,mid=1
+# low=1 mid=1 high=4: arr[1]=0 → swap(1,1) → [0,0,2,1,1,2], low=2,mid=2
+# low=2 mid=2 high=4: arr[2]=2 → swap(2,4) → [0,0,1,1,2,2], high=3
+# low=2 mid=2 high=3: arr[2]=1 → mid=3
+# low=2 mid=3 high=3: arr[3]=1 → mid=4
+# mid > high → done: [0,0,1,1,2,2] ✓
+
+# ── Generalized: sort array with values {0..k} ────────────────────
+def sort_k_colors(arr, k):
+    count = [0] * k
+    for val in arr: count[val] += 1
+    idx = 0
+    for val in range(k):
+        for _ in range(count[val]):
+            arr[idx] = val
+            idx += 1
+    return arr
+
+# ── Variant: Move all zeros to end ───────────────────────────────
+def move_zeros(arr):
+    low = 0
+    for mid in range(len(arr)):
+        if arr[mid] != 0:
+            arr[low], arr[mid] = arr[mid], arr[low]
+            low += 1
+    return arr
+
+# ── Variant: Separate negatives and positives ────────────────────
+def separate_neg_pos(arr):
+    low, high = 0, len(arr) - 1
+    while low < high:
+        while low < high and arr[low] < 0:   low  += 1
+        while low < high and arr[high] >= 0: high -= 1
+        if low < high:
+            arr[low], arr[high] = arr[high], arr[low]
+    return arr
+
+# Examples
+print(sort_colors([2, 0, 2, 1, 1, 0]))       # → [0, 0, 1, 1, 2, 2]
+print(sort_colors([2, 0, 1]))                 # → [0, 1, 2]
+print(move_zeros([0, 1, 0, 3, 12]))           # → [1, 3, 12, 0, 0]
+print(separate_neg_pos([-1, 2, -3, 4, -5]))   # → [-1, -5, -3, 2, 4]
+```
+
+---
+
+## 4. Remove Duplicates
+
+### Concept
+- Use a **slow pointer** (`write`) to track the position to write next unique element, and a **fast pointer** (`read`) to scan ahead.
+- **Time:** O(n) | **Space:** O(1) in-place
+
+### Interview Points
+- Classic **read/write two-pointer** pattern — different from opposite-end pattern.
+- Return the new length `k`; first `k` elements of array are the answer.
+- Interviewers often say "don't allocate extra space" — this is O(1) space.
+- **Variants** in order of increasing complexity:
+  1. Remove duplicates (each element appears **once**)
+  2. Allow duplicates up to **k times** (generalizes elegantly)
+  3. Remove a **specific value** in-place
+  4. Remove duplicates from **sorted linked list**
+- The `k=2` generalization trick: compare `arr[write]` with `arr[write - k]` instead of `arr[write - 1]`.
+
+```python
+# ── Remove Duplicates (each element once, sorted array) ───────────
+def remove_duplicates(arr):
+    if not arr: return 0
+    write = 1                                  # next write position
+    for read in range(1, len(arr)):
+        if arr[read] != arr[read - 1]:         # new unique element found
+            arr[write] = arr[read]
+            write += 1
+    return write                               # new length
+
+# ── Allow at most k=2 duplicates ─────────────────────────────────
+def remove_duplicates_k(arr, k=2):
+    if len(arr) <= k: return len(arr)
+    write = k                                  # first k elements always kept
+    for read in range(k, len(arr)):
+        if arr[read] != arr[write - k]:        # compare with k positions back
+            arr[write] = arr[read]
+            write += 1
+    return write
+
+# Why does arr[read] != arr[write - k] work?
+# arr[write-k..write-1] are the last k written elements.
+# If arr[read] == arr[write-k], we already have k copies → skip.
+# If different → safe to include.
+
+# ── Remove specific value in-place ───────────────────────────────
+def remove_element(arr, val):
+    write = 0
+    for read in range(len(arr)):
+        if arr[read] != val:
+            arr[write] = arr[read]
+            write += 1
+    return write
+
+# ── Remove duplicates from unsorted array ────────────────────────
+def remove_duplicates_unsorted(arr):
+    seen = set()
+    write = 0
+    for read in range(len(arr)):
+        if arr[read] not in seen:
+            seen.add(arr[read])
+            arr[write] = arr[read]
+            write += 1
+    return write
+
+# ── Remove duplicates from sorted linked list ────────────────────
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def remove_duplicates_linked(head):
+    curr = head
+    while curr and curr.next:
+        if curr.val == curr.next.val:
+            curr.next = curr.next.next         # skip duplicate
+        else:
+            curr = curr.next                   # only advance if no duplicate
+    return head
+
+# Remove ALL nodes with duplicate values (keep only unique)
+def remove_all_duplicates_linked(head):
+    dummy = ListNode(0, head)
+    prev = dummy
+    curr = head
+    while curr:
+        if curr.next and curr.val == curr.next.val:
+            while curr.next and curr.val == curr.next.val:
+                curr = curr.next               # skip all dupes
+            prev.next = curr.next              # skip the last dupe too
+        else:
+            prev = prev.next
+        curr = curr.next
+    return dummy.next
+
+# Examples
+arr = [1, 1, 2, 3, 3, 4]
+k = remove_duplicates(arr)
+print(arr[:k])                                 # → [1, 2, 3, 4]
+
+arr = [1, 1, 1, 2, 2, 3]
+k = remove_duplicates_k(arr, k=2)
+print(arr[:k])                                 # → [1, 1, 2, 2, 3]
+
+arr = [3, 2, 2, 3]
+k = remove_element(arr, 3)
+print(arr[:k])                                 # → [2, 2]
+```
+
+---
+
+## 🧠 Two Pointer — Cheat Sheet
+
+| Problem | Pointer Setup | Move Condition | Key Insight |
+|---|---|---|---|
+| Two Sum (sorted) | Opposite ends | Sum < target → left++, Sum > target → right-- | Sorted + opposite ends |
+| Three Sum | Fix i, opposite ends on rest | Same as two sum for inner | Skip duplicates at both levels |
+| Container With Water | Opposite ends | Move the **shorter** side | Width shrinks, height can only improve on shorter side |
+| Trapping Rain Water | Opposite ends | Move smaller max side | Water = min(left_max, right_max) - height |
+| Dutch National Flag | low / mid / high | 0→swap low, 1→skip, 2→swap high | Don't advance mid after swap with high |
+| Remove Duplicates | Read / Write (same dir) | Write only on new unique value | Write pointer = next insertion point |
+| Remove Element | Read / Write (same dir) | Write only when val ≠ target | Overwrite targets with non-targets |
+
+---
+
+## ⚡ Two Pointer Patterns At a Glance
+
+```python
+# ── Pattern 1: Opposite ends (sorted array, target sum) ──────────
+left, right = 0, len(arr) - 1
+while left < right:
+    if condition_met:      return result
+    elif need_larger:      left += 1
+    else:                  right -= 1
+
+# ── Pattern 2: Read / Write (in-place modification) ──────────────
+write = 0
+for read in range(len(arr)):
+    if should_keep(arr[read]):
+        arr[write] = arr[read]
+        write += 1
+return write                               # new length
+
+# ── Pattern 3: Fast / Slow (cycle detection, middle of list) ─────
+slow = fast = head
+while fast and fast.next:
+    slow = slow.next
+    fast = fast.next.next
+# slow is now at the middle
+
+# ── Pattern 4: Three pointers (DNF, 3-way partition) ─────────────
+low, mid, high = 0, 0, len(arr) - 1
+while mid <= high:
+    if arr[mid] == LOW:    swap(low, mid); low += 1; mid += 1
+    elif arr[mid] == MID:  mid += 1
+    else:                  swap(mid, high); high -= 1
+```
+
+---
+
+## 🔗 Duplicate Skipping Template
+
+```python
+# After recording a valid result, skip duplicates on both sides:
+while left < right and arr[left]  == arr[left  + 1]: left  += 1
+while left < right and arr[right] == arr[right - 1]: right -= 1
+left  += 1
+right -= 1
+
+# In outer loop of 3Sum:
+if i > 0 and arr[i] == arr[i - 1]: continue   # skip duplicate fixed element
+```
+
+---
+
+
+
+
 
 
 
