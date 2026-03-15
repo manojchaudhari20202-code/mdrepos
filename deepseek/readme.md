@@ -1,7 +1,7 @@
 ### Interview Notes
 ---
 - [Principles](principlesAssorted.md)
-- [Patterns](principlesAssorted.md)
+- [Patterns](patterns.md)
 ---
 - [Java](java.md)
 - [Python](python.md)
@@ -12,19 +12,19 @@
 - [Kafka](kafka.md)
 - [Spark](spark.md)
 ---
-- [Javascript](javascript.md)
-- [Typescript](typescript.md)
-- [Patterns Assorted](patternsAssorted.md)
-- [Microservices](microservices.md)
-- [Data Management](dataManagement.md)
-- [System Design](dataManagement.md)
----
 - [Arcitura Patterns](arcituraPatterns.md)
 - [Arcitura DevOps](arcituraDevOps.md)
 - [Arcitura SOA](arcituraSOA.md)
 - [Arcitura BigData](arcituraBigData.md)
 - [Arcitura Cloud](arcituraCloud.md)
 - [Arcitura Microservices](arcituraMicroservices.md)
+---
+- [Javascript](javascript.md)
+- [Typescript](typescript.md)
+- [Patterns Assorted](patternsAssorted.md)
+- [Microservices](microservices.md)
+- [Data Management](dataManagement.md)
+- [System Design](dataManagement.md)
 ---
 <!--
 
