@@ -188,3 +188,173 @@
 - **Secrets management**: HashiCorp Vault, AWS Secrets Manager, Kubernetes Secrets.
 - **Service registries**: Consul, Eureka, etcd, Zookeeper.
 - **Distributed caches**: Redis, Memcached, Hazelcast.
+
+
+# Arcitura Patterns
+## SOA DESIGN PATTERNS
+
+### Service Design Patterns
+- **Service Contract Design** – Formalize service interfaces and interaction contracts.
+- **Service Façade** – Expose simplified interface to hide underlying complexity.
+- **Service Wrapper** – Adapt legacy systems to expose them as services.
+- **Service Normalization** – Ensure data and service models conform to standards.
+- **Service Decomposition** – Break down large services into smaller, cohesive ones.
+- **Capability Composition** – Combine service capabilities to fulfill business processes.
+- **Agnostic Service** – Business-agnostic, reusable service with generic logic.
+- **Non-Agnostic Service** – Service tied to specific business process or domain.
+- **Utility Service** – Provides technical/infrastructure capabilities (logging, messaging).
+- **Entity Service** – Service representing a business entity (Customer, Order).
+- **Task Service** – Service representing a business task or workflow step.
+
+### Service Interaction Patterns
+- **Service Composition** – Assemble services to create composite applications.
+- **Orchestration** – Centralized control of service interactions.
+- **Choreography** – Decentralized coordination via events.
+- **Asynchronous Messaging** – Non‑blocking communication between services.
+- **Competing Consumers** – Multiple consumers process messages from a single queue.
+- **Event‑Driven Messaging** – Services communicate via events.
+- **Callback** – Service provides a callback endpoint for async response.
+- **Service Router** – Routes requests to appropriate service instances.
+
+### Service Governance Patterns
+- **Canonical Data Model** – Standardized data model for interoperability.
+- **Contract Centralization** – Central management of service contracts.
+- **Service Registry** – Central repository for service metadata and endpoints.
+- **Policy Centralization** – Centralized management of policies (security, etc.).
+- **SLA Centralization** – Central monitoring and enforcement of SLAs.
+
+---
+
+## MICROSERVICES PATTERNS
+
+### Architectural Patterns
+- **Bounded Context** – Domain‑driven design boundary for microservice.
+- **API Gateway** – Single entry point for clients, routing, composition.
+- **Database per Service** – Each service has its own database.
+- **Decentralized Governance** – Teams choose their own tech stacks.
+- **Backend for Frontend (BFF)** – Dedicated backend per frontend client.
+- **Service Registry** – Database of service instances and locations.
+- **Service Discovery** – Dynamic finding of service instances.
+
+### Communication Patterns
+- **Synchronous REST** – HTTP/REST for request‑response.
+- **Asynchronous Messaging** – Message queues for decoupled communication.
+- **Event Streaming** – Kafka‑like streams for event propagation.
+- **Pub/Sub** – Publish‑subscribe model for events.
+
+### Data Patterns
+- **CQRS** – Separate read and write models.
+- **Event Sourcing** – Store state as sequence of events.
+- **Saga** – Distributed transaction coordination via compensating actions.
+- **API Composition** – Aggregate data from multiple services.
+- **Aggregator** – Service that aggregates responses from multiple services.
+
+### Resiliency Patterns
+- **Circuit Breaker** – Prevent cascading failures by failing fast.
+- **Retry** – Automatic retry of failed operations.
+- **Timeout** – Limit wait time for responses.
+- **Bulkhead** – Isolate resources to limit failure impact.
+- **Idempotent Receiver** – Ensure operations can be safely retried.
+
+---
+
+## CLOUD PATTERNS
+
+### Cloud Architecture Patterns
+- **Elastic Resource Capacity** – Dynamically scale resources based on demand.
+- **Resource Pooling** – Share resources among multiple users.
+- **Resource Replication** – Duplicate resources for availability.
+- **Dynamic Scalability** – Automatic scaling up/down.
+- **Failover System** – Automatic switch to standby on failure.
+- **Load Balanced Virtual Server** – Distribute load across servers.
+- **Redundant Storage** – Store data redundantly for durability.
+- **Audit Monitor** – Track resource usage for compliance.
+- **Usage Monitor** – Monitor resource consumption.
+- **Pay‑Per‑Use Monitor** – Track usage for billing.
+
+### Cloud Security Patterns
+- **Identity Federation** – Federated identity management across providers.
+- **Encrypted Storage** – Data encryption at rest.
+- **Secure Communication** – Encryption in transit.
+- **Multi‑Tenancy Isolation** – Isolate tenants in shared infrastructure.
+
+### Cloud Operational Patterns
+- **Automated Scaling Listener** – Triggers scaling based on metrics.
+- **Resource Reservation** – Reserve capacity for future use.
+- **Cloud Balancing** – Distribute workload across clouds.
+
+---
+
+## BIG DATA PATTERNS
+
+### Data Architecture Patterns
+- **Data Lake** – Raw data storage in native format.
+- **Data Warehouse** – Structured, processed data for analytics.
+- **Data Lakehouse** – Combines data lake and warehouse features.
+- **Data Mesh** – Decentralized data ownership and architecture.
+- **Schema‑on‑Read** – Apply schema when reading data.
+- **Schema‑on‑Write** – Apply schema when writing data.
+
+### Processing Patterns
+- **Batch Processing** – Process large volumes in batches.
+- **Stream Processing** – Real‑time processing of data streams.
+- **Micro‑Batch Processing** – Small batches for near‑real‑time.
+- **Real‑Time Analytics** – Immediate analysis of incoming data.
+
+### Governance Patterns
+- **Data Lineage** – Track data origin and transformations.
+- **Metadata Centralization** – Central metadata management.
+- **Master Data Management** – Manage core business entities consistently.
+- **Data Quality Monitoring** – Monitor and ensure data quality.
+
+---
+
+## DEVOPS PATTERNS
+
+### Pipeline Patterns
+- **Continuous Integration** – Frequent integration of code changes.
+- **Continuous Delivery** – Automate deployment to staging, manual to prod.
+- **Continuous Deployment** – Automate deployment to production.
+- **Pipeline as Code** – Define CI/CD pipelines in code.
+
+### Infrastructure Patterns
+- **Infrastructure as Code** – Manage infrastructure via code.
+- **Immutable Infrastructure** – Replace servers rather than update.
+- **Configuration as Code** – Manage configurations in code.
+- **Environment Replication** – Replicate environments for consistency.
+
+### Release Patterns
+- **Blue‑Green Deployment** – Two environments, switch traffic.
+- **Canary Release** – Gradual rollout to subset of users.
+- **Rolling Deployment** – Incremental update of instances.
+
+### Observability Patterns
+- **Centralized Logging** – Aggregate logs for analysis.
+- **Distributed Tracing** – Trace requests across services.
+- **Health Monitoring** – Monitor system health.
+- **Error Budget Governance** – Manage reliability vs features.
+
+---
+
+## SECURITY PATTERNS (Cross‑Domain)
+- **Zero Trust Model** – Never trust, always verify.
+- **RBAC** – Role‑Based Access Control.
+- **Token‑Based Authentication** – Use tokens for auth (JWT).
+- **OAuth2** – Authorization framework.
+- **API Security Gateway** – Secure API access.
+- **Secrets Management** – Securely store and manage secrets.
+- **Encryption at Rest** – Encrypt stored data.
+- **Encryption in Transit** – Encrypt data in transit.
+
+---
+
+## GOVERNANCE & ENTERPRISE PATTERNS
+- **Architecture Review Board** – Governance body for architecture decisions.
+- **Policy Enforcement** – Enforce policies across organization.
+- **Centralized Monitoring** – Central oversight of systems.
+- **Compliance Automation** – Automate compliance checks.
+- **Risk Mitigation Framework** – Systematic risk management.
+- **Service Portfolio Management** – Manage services as a portfolio.
+- **Platform Engineering Model** – Build internal developer platforms.
+
+
