@@ -638,4 +638,583 @@
 ### Thread lifecycle
 - Thread states: NEW (created but not started), RUNNABLE (executing or ready to run), BLOCKED (waiting for monitor lock), WAITING (waiting indefinitely), TIMED_WAITING (waiting for specified time), TERMINATED (completed).
 - Transitions: `start()` moves from NEW to RUNNABLE; scheduler decides running.
-- `wait()`, `notify()`, `join()`,
+- `wait()`, `notify()`, `join()`, `sleep()` cause state changes.
+- `interrupt()` can wake a thread from waiting/sleeping, setting interrupt flag.
+- Understanding lifecycle helps in debugging concurrency issues.
+
+### Runnable vs Callable
+- `Runnable` is a functional interface with `run()` method (no return value, cannot throw checked exceptions).
+- `Callable<V>` is a functional interface with `call()` method (returns a value, can throw checked exceptions).
+- `Callable` is used with `ExecutorService.submit()` returning `Future`.
+- `Runnable` tasks can be adapted to `Callable` using `Executors.callable()`.
+- Prefer `Callable` when result or exception handling is needed.
+
+### Thread creation
+- Two ways: extend `Thread` class and override `run()`; or implement `Runnable` and pass to `Thread` constructor.
+- Implementing `Runnable` is preferred because it separates task from execution and allows extending other classes.
+- Starting a thread: call `start()` (not `run()`, which executes in current thread).
+- Threads can also be created via `ExecutorService` for better management.
+- Daemon threads (setDaemon(true)) run in background and terminate when all user threads finish.
+
+### Synchronization
+- Synchronization controls access to shared resources by multiple threads to prevent data inconsistency.
+- Achieved using `synchronized` keyword on methods or blocks, using an intrinsic lock (monitor).
+- Synchronized methods lock on the instance (for instance methods) or class (for static methods).
+- Synchronized blocks allow locking on any object, providing finer control.
+- Synchronization ensures visibility and atomicity but can cause contention and deadlocks.
+
+### Intrinsic locks
+- Every Java object has an intrinsic lock (monitor) associated with it.
+- When a thread enters a synchronized method/block, it acquires the lock; other threads block until release.
+- Locks are reentrant: a thread holding a lock can acquire it again without deadlock.
+- Intrinsic locks are simple but lack flexibility (no timeout, interruptible acquisition).
+- For advanced locking, use `java.util.concurrent.locks` package.
+
+### Deadlocks
+- Deadlock occurs when two or more threads are blocked forever, each waiting for a lock held by another.
+- Necessary conditions: mutual exclusion, hold and wait, no preemption, circular wait.
+- Prevention strategies: lock ordering, timeout, using tryLock, avoiding nested locks, using higher-level concurrency utilities.
+- Detection: tools like jstack, thread dumps, visual VM.
+- Deadlocks are hard to debug; design to avoid them.
+
+### Race conditions
+- Race condition occurs when the outcome of a program depends on the timing of thread execution.
+- Common in read-modify-write operations (e.g., counter increment) without synchronization.
+- Can lead to data corruption and unpredictable behavior.
+- Prevention: use synchronization, atomic variables, or immutable data.
+- Even with synchronization, race conditions can exist if not all accesses are protected.
+
+### Volatile keyword
+- `volatile` ensures that reads and writes to a variable are directly from/to main memory, not thread-local caches.
+- It provides visibility guarantee: changes by one thread are visible to others immediately.
+- Does not provide atomicity (e.g., increment operation still needs synchronization).
+- Useful for flags, state variables, and double-checked locking (with proper semantics).
+- Since Java 5, volatile has acquire/release semantics.
+
+### Thread safety
+- A class is thread-safe if it behaves correctly when accessed from multiple threads.
+- Achieved through immutability, synchronization, or using thread-safe classes (e.g., `ConcurrentHashMap`).
+- Stateless objects are inherently thread-safe.
+- Thread-safe classes can be composed with care; need to ensure atomicity of compound actions.
+- Document thread-safety guarantees.
+
+### Executor framework
+- The `Executor` framework decouples task submission from execution.
+- `Executor` interface has `execute(Runnable)`. `ExecutorService` extends with `submit()`, `shutdown()`, etc.
+- Provides thread pool management, task scheduling, and future results.
+- Common implementations: `ThreadPoolExecutor`, `ScheduledThreadPoolExecutor`, `ForkJoinPool`.
+- Simplifies concurrent programming and resource management.
+
+### Thread pools
+- Thread pools manage a pool of worker threads, reusing them for multiple tasks to reduce overhead.
+- Fixed thread pool: `Executors.newFixedThreadPool(n)`.
+- Cached thread pool: `Executors.newCachedThreadPool()` creates threads as needed, reuses idle ones.
+- Single thread executor: `Executors.newSingleThreadExecutor()` ensures sequential execution.
+- Scheduled thread pool: `Executors.newScheduledThreadPool()` for delayed/periodic tasks.
+- Proper sizing: consider CPU cores, I/O vs CPU-bound tasks.
+
+### Future and CompletableFuture
+- `Future` represents the result of an asynchronous computation, with methods to check completion, wait, and retrieve result.
+- Limitations: blocking `get()`, no chaining, no manual completion.
+- `CompletableFuture` (Java 8) implements `Future` and `CompletionStage`, providing non-blocking operations, chaining, and combining.
+- Supports callbacks (`thenApply`, `thenAccept`, `thenRun`), combining (`thenCombine`), error handling (`exceptionally`), and composing.
+- Used for asynchronous programming and parallel tasks.
+
+### Locks and ReentrantLock
+- `Lock` interface in `java.util.concurrent.locks` provides more flexible locking than intrinsic locks.
+- `ReentrantLock` is a reentrant mutual exclusion Lock with features: tryLock (with timeout), lockInterruptibly, fairness policy.
+- Requires explicit lock/unlock, usually in try-finally block.
+- Condition objects (from `newCondition()`) allow wait/notify-like behavior with multiple wait sets.
+- Prefer `ReentrantLock` when advanced features needed; otherwise, synchronized is simpler.
+
+### ReadWriteLock
+- `ReadWriteLock` maintains a pair of locks: one for read-only operations, one for writes.
+- Multiple threads can hold read lock concurrently; write lock is exclusive.
+- Useful for data structures with frequent reads and occasional writes, improving concurrency.
+- `ReentrantReadWriteLock` is the primary implementation.
+- Beware of lock downgrading (from write to read) and potential starvation.
+
+### Concurrent collections
+- Already covered earlier but important for concurrency: `ConcurrentHashMap`, `CopyOnWriteArrayList`, `ConcurrentLinkedQueue`, `BlockingQueue` implementations.
+- They provide thread-safe operations without explicit synchronization.
+- `ConcurrentHashMap` uses lock striping and volatile semantics.
+- `CopyOnWriteArrayList` creates a new copy on modification, suitable for read-heavy scenarios.
+- `BlockingQueue` supports producer-consumer patterns with blocking put/take.
+
+### Atomic variables
+- `java.util.concurrent.atomic` package provides classes like `AtomicInteger`, `AtomicLong`, `AtomicReference` for lock-free thread-safe operations on single variables.
+- They use CAS (Compare-And-Swap) instructions at hardware level for high performance.
+- Operations like `incrementAndGet()`, `compareAndSet()`, `updateAndGet()`.
+- Avoids synchronization overhead and provides better scalability.
+- Useful for counters, accumulators, and non-blocking algorithms.
+
+### Fork/Join framework
+- Fork/Join framework (Java 7) is designed for parallel processing of tasks that can be recursively split.
+- Core classes: `ForkJoinPool`, `ForkJoinTask`, `RecursiveTask` (with result), `RecursiveAction` (no result).
+- Uses work-stealing algorithm: idle threads steal tasks from busy threads' queues to improve load balancing.
+- Ideal for divide-and-conquer problems like parallel sorting, matrix multiplication.
+- Parallel streams (Java 8) use Fork/Join under the hood.
+
+### Parallel streams
+- Parallel streams enable concurrent processing of stream elements using `parallel()` or `parallelStream()`.
+- They leverage the common ForkJoinPool to execute operations in parallel.
+- Useful for CPU-intensive tasks with large data sets; but overhead may outweigh benefits for small data or I/O-bound tasks.
+- Must ensure that operations are stateless, non-interfering, and associative to avoid concurrency issues.
+- Parallel streams can cause performance degradation if not used carefully; monitor with benchmarks.
+
+### Producer-consumer pattern
+- Classic concurrency pattern where producers generate data and consumers process it, often with a shared buffer.
+- Implemented using `BlockingQueue` (e.g., `ArrayBlockingQueue`) which handles synchronization automatically.
+- Producer calls `put()` (blocks if queue full); consumer calls `take()` (blocks if empty).
+- Alternative: use `wait()` and `notifyAll()` with explicit synchronization, but `BlockingQueue` simplifies.
+- Important to handle interruption and shutdown properly.
+
+## Java Memory Model & JVM Internals
+
+### JVM architecture
+- JVM consists of class loader subsystem, runtime data areas (heap, stack, PC registers, method area, native method stack), execution engine, and native interface.
+- Runtime data areas: heap (shared), method area (shared), Java stacks (per thread), PC registers (per thread), native method stacks (per thread).
+- Execution engine includes interpreter, JIT compiler, and garbage collector.
+- JVM specifications are implemented by various vendors (HotSpot, OpenJ9, etc.).
+- Understanding architecture aids in performance tuning and troubleshooting.
+
+### Heap vs stack
+- Heap is the runtime data area where objects and arrays are allocated; shared among all threads.
+- Stack is per-thread, storing frames (local variables, partial results, method calls). Each frame has operand stack and local variable array.
+- Stack memory is faster, but limited; heap is larger but slower and managed by GC.
+- Stack stores primitive local variables and object references; objects themselves are in heap.
+- StackOverflowError occurs when stack depth exceeded; OutOfMemoryError when heap full.
+
+### Method area
+- Method area (part of heap in HotSpot) stores class-level data: runtime constant pool, field and method data, constructor and method code, special methods.
+- It is shared among all threads.
+- Before Java 8, method area was part of PermGen (permanent generation); now replaced by Metaspace.
+- Contains static variables, which are references to objects (objects themselves on heap).
+
+### Metaspace
+- Metaspace (introduced in Java 8) replaces PermGen for storing class metadata.
+- Unlike PermGen, Metaspace is not contiguous to heap; it uses native memory, sized by operating system's available memory.
+- This change reduces the risk of `OutOfMemoryError: PermGen space`.
+- Metaspace size can be controlled with `-XX:MaxMetaspaceSize`.
+- Class metadata is garbage collected when classes are unloaded.
+
+### Class loaders
+- Class loaders are responsible for loading class files into memory.
+- Three built-in class loaders: Bootstrap (loads core Java classes), Platform/Extension (loads extensions), Application/System (loads from classpath).
+- Delegation model: a class loader delegates loading to parent before trying itself.
+- Custom class loaders can be created for dynamic loading (e.g., web servers).
+- Class loading is dynamic and lazy (classes loaded when first referenced).
+
+### Garbage collection basics
+- Garbage collection automatically reclaims memory occupied by unreachable objects.
+- Objects become unreachable when no references point to them (from roots: stack variables, static fields, JNI references).
+- GC roots include active threads, static fields, local variables, JNI references.
+- GC algorithms involve marking reachable objects, and sweeping/compacting unreachable ones.
+- Tuning GC is critical for application performance.
+
+### GC algorithms
+- Common algorithms: Serial (single-threaded, stop-the-world), Parallel (multithreaded), CMS (concurrent mark-sweep, deprecated), G1 (garbage-first), ZGC (low-latency), Shenandoah.
+- Serial GC suitable for small apps; Parallel for throughput; G1 for balanced; ZGC/Shenandoah for low latency.
+- Each has trade-offs in throughput, latency, and footprint.
+- GC logs and monitoring tools help choose appropriate algorithm.
+
+### G1, ZGC, Shenandoah
+- G1 (Garbage First) is the default since Java 9, divides heap into regions, prioritizes garbage collection in regions with most garbage, aims for low pause times.
+- ZGC (Java 11+) is a scalable low-latency collector, handles heaps up to multi-terabytes, pause times <10ms, uses colored pointers and load barriers.
+- Shenandoah (Java 12+, not in all builds) also low-latency, concurrent evacuation, reduces pause times.
+- These collectors are designed for applications requiring predictable and low pause times.
+
+### Memory leaks
+- In Java, memory leaks occur when objects are no longer needed but still referenced, preventing GC.
+- Common causes: static collections accumulating objects, unclosed resources, listeners not deregistered, ThreadLocal misuse, cache without weak references.
+- Memory leaks degrade performance and lead to OutOfMemoryError.
+- Detection: profiling tools (VisualVM, JProfiler), heap dumps, GC logs.
+- Prevention: use weak references where appropriate, clear collections, close resources, etc.
+
+### Object allocation
+- Objects are typically allocated on heap (eden space) using TLAB (Thread Local Allocation Buffer) for performance.
+- Escape analysis (since Java 6) can determine if an object is not shared, allowing allocation on stack or even scalar replacement (object fields as local variables), reducing GC pressure.
+- Allocation can also happen in old generation if object is large (direct to old).
+- Object allocation is fast due to bump-pointer allocation and TLABs.
+
+### Escape analysis
+- Escape analysis is an optimization technique that analyzes object scope.
+- If an object does not escape method or thread, JIT can allocate it on stack instead of heap, or even eliminate it (scalar replacement).
+- This reduces GC overhead and improves performance.
+- Enabled by default in modern JVMs; controlled with `-XX:+DoEscapeAnalysis`.
+- It's a compiler optimization, not visible at source level.
+
+### JIT compilation
+- Just-In-Time (JIT) compiler compiles bytecode to native machine code at runtime for frequently executed code (hot spots).
+- Two main compilers in HotSpot: C1 (client, quick) and C2 (server, more optimized); tiered compilation uses both.
+- JIT improves performance significantly by adaptive optimization.
+- It profiles code to identify bottlenecks and applies inlining, loop unrolling, etc.
+- JIT-compiled code is stored in code cache.
+
+### Bytecode execution
+- Bytecode can be executed by interpreter (slow) or JIT-compiled (fast).
+- Initially, interpreter runs, collecting profiling data; hot methods are JIT-compiled.
+- Stack-based architecture: operations use operand stack.
+- Bytecode instructions are simple (e.g., iload, iadd, invokevirtual).
+- Execution engine ensures type safety and stack integrity.
+
+### JVM tuning basics
+- JVM tuning involves adjusting heap size, GC algorithm, and other parameters for optimal performance.
+- Common options: `-Xms` (initial heap), `-Xmx` (max heap), `-XX:+UseG1GC`, `-XX:MaxGCPauseMillis`.
+- Monitor GC logs, heap usage, thread dumps to identify issues.
+- Tuning aims to balance throughput, latency, and memory footprint.
+- Over-tuning can be counterproductive; start with defaults and adjust based on profiling.
+
+## Functional Programming & Streams
+
+### Lambda expressions
+- Lambda expressions provide a concise way to represent anonymous functions, enabling functional programming in Java.
+- Syntax: `(parameters) -> expression` or `(parameters) -> { statements; }`.
+- They can be used where a functional interface is expected.
+- Lambdas capture effectively final variables from enclosing scope.
+- Improve code readability and enable behavior parameterization.
+
+### Functional interfaces
+- A functional interface has exactly one abstract method (SAM), may have default and static methods.
+- Annotated with `@FunctionalInterface` for compile-time check.
+- Common functional interfaces: `Predicate<T>`, `Function<T,R>`, `Consumer<T>`, `Supplier<T>`, `Comparator<T>`, `Runnable`, `Callable`.
+- Java 8 provides many in `java.util.function` package.
+- Lambdas can be assigned to functional interface types.
+
+### Method references
+- Method references are shorthand for lambdas calling a specific method.
+- Four types: static method (`Class::staticMethod`), instance method of a particular object (`instance::method`), instance method of any object of a particular type (`Class::instanceMethod`), constructor (`Class::new`).
+- They are more concise and often more readable.
+- Can be used where lambda would just call an existing method.
+
+### Stream API
+- Stream API (java.util.stream) enables functional-style operations on sequences of elements.
+- Streams are not data structures; they pull data from sources (collections, arrays, I/O channels).
+- Operations are divided into intermediate (lazy, return new stream) and terminal (eager, produce result).
+- Streams can be sequential or parallel.
+- Designed for internal iteration, allowing optimizations like lazy evaluation and short-circuiting.
+
+### Intermediate operations
+- Intermediate operations transform a stream into another stream, e.g., `filter()`, `map()`, `flatMap()`, `distinct()`, `sorted()`, `peek()`, `limit()`, `skip()`.
+- They are lazy; execution only occurs when a terminal operation is invoked.
+- `map()` applies a function to each element; `flatMap()` flattens nested structures.
+- `filter()` selects elements based on predicate.
+- Intermediate operations can be chained.
+
+### Terminal operations
+- Terminal operations produce a result or side effect, e.g., `forEach()`, `collect()`, `toArray()`, `reduce()`, `count()`, `anyMatch()`, `allMatch()`, `noneMatch()`, `findFirst()`, `findAny()`.
+- After terminal operation, the stream is consumed and cannot be reused.
+- `reduce()` performs associative aggregation.
+- `collect()` accumulates elements into a collection or other result using `Collectors`.
+
+### Collectors
+- `Collectors` utility class provides implementations for `collect()`.
+- Common collectors: `toList()`, `toSet()`, `toMap()`, `joining()`, `groupingBy()`, `partitioningBy()`, `summarizingInt()`, `averagingInt()`.
+- Custom collectors can be created using `Collector.of()`.
+- `groupingBy()` classifies elements by a classifier function.
+- `partitioningBy()` splits into two groups based on predicate.
+
+### Parallel streams
+- Parallel streams use common ForkJoinPool to process elements concurrently.
+- Enable via `parallelStream()` or `stream().parallel()`.
+- Suitable for CPU-intensive tasks with large data; but overhead of splitting and combining can degrade performance for small data or non-independent operations.
+- Operations must be stateless, non-interfering, and associative.
+- Use `forEachOrdered()` to preserve encounter order when needed.
+
+### Stream performance
+- Streams can have overhead due to lambda creation, boxing, and pipeline setup.
+- For simple operations on small data, traditional loops may be faster.
+- Parallel streams can speed up large data processing if operations are CPU-bound and data can be split evenly.
+- Use primitive streams (`IntStream`, `LongStream`, `DoubleStream`) to avoid boxing overhead.
+- Profiling and benchmarking (JMH) recommended to evaluate performance.
+
+### Optional usage
+- `Optional` is used to represent potentially absent values in stream operations.
+- Terminal operations like `findFirst()` return `Optional`.
+- Use `ifPresent()`, `orElse()`, `orElseGet()` to handle optional results gracefully.
+- Avoid using `Optional` as method parameters or fields; it's designed for return types.
+- In streams, `Optional` can be chained with methods like `map()` and `filter()`.
+
+## Reflection & Class Loading
+
+### Reflection API
+- Reflection allows examining or modifying runtime behavior of classes, interfaces, fields, and methods.
+- Key classes: `Class`, `Field`, `Method`, `Constructor`, `Modifier`, `Array`.
+- Can access private members (via `setAccessible(true)`), but security manager may restrict.
+- Used in frameworks (Spring, Hibernate) for dependency injection, ORM, and serialization.
+- Performance overhead due to runtime type checking; avoid in performance-critical code.
+
+### Dynamic class loading
+- Dynamic class loading loads classes at runtime using `Class.forName()` or class loaders.
+- `Class.forName(String className)` loads class and returns `Class` object, initializing it.
+- Can also load with custom class loader.
+- Used in plugin architectures, JDBC drivers (`Class.forName("com.mysql.jdbc.Driver")`).
+- Enables runtime flexibility but adds complexity.
+
+### ClassLoader hierarchy
+- As mentioned earlier, class loaders follow delegation model.
+- Understanding custom class loaders is essential for application servers and modular applications.
+- `Thread.currentThread().getContextClassLoader()` often used to load classes in web apps.
+- Class loaders can define packages and resolve classes from different sources.
+- ClassLoader leaks can occur if classes are not unloaded, often in PermGen/Metaspace.
+
+### Annotations processing
+- Annotation processing can occur at compile-time (via annotation processors) or runtime (via reflection).
+- Compile-time processing: apt tool (old) or `javac` with processors, generating source files, etc.
+- Runtime processing: reflection to read annotations and take actions.
+- Popular libraries use runtime processing (e.g., JUnit, Spring) or compile-time (Lombok).
+- `@Retention` policy determines if annotation is available at runtime.
+
+### Runtime introspection
+- Introspection is the ability to examine object properties and methods at runtime.
+- Reflection provides introspection capabilities, e.g., `getFields()`, `getMethods()`, `getDeclaredAnnotations()`.
+- JavaBeans introspection uses `Introspector` to discover properties.
+- Used in frameworks for dynamic behavior.
+- Introspection can be slow; caching results can mitigate.
+
+### Dynamic proxies
+- Dynamic proxies allow creation of proxy instances for interfaces at runtime.
+- `java.lang.reflect.Proxy` creates proxy classes that implement specified interfaces.
+- Method calls are dispatched to an `InvocationHandler`.
+- Used in AOP frameworks (Spring AOP) to add cross-cutting concerns.
+- For classes (not interfaces), use bytecode manipulation libraries like CGLIB or ByteBuddy.
+
+## Java Networking
+
+### Sockets
+- Sockets are endpoints for communication between two machines over a network.
+- Java provides `Socket` (client) and `ServerSocket` (server) for TCP communication.
+- `DatagramSocket` for UDP.
+- Sockets allow reading/writing data via streams.
+- Example: client connects to server IP and port, exchanges data.
+
+### TCP vs UDP
+- TCP (Transmission Control Protocol) is connection-oriented, reliable, ordered, and error-checked; used for HTTP, email, FTP.
+- UDP (User Datagram Protocol) is connectionless, unreliable, but faster; used for streaming, DNS, gaming.
+- TCP ensures data integrity but has overhead; UDP is lightweight but can lose packets.
+- Java supports both via `Socket`/`ServerSocket` (TCP) and `DatagramSocket` (UDP).
+- Choice depends on application requirements.
+
+### HTTP basics
+- HTTP (Hypertext Transfer Protocol) is the foundation of web communication.
+- Request methods: GET, POST, PUT, DELETE, etc.
+- Status codes: 200 OK, 404 Not Found, 500 Internal Server Error.
+- Headers provide metadata (content type, caching, authorization).
+- Java provides `HttpURLConnection` (since 1.1) and newer `HttpClient` (since Java 11).
+
+### URL connections
+- `URL` class represents a Uniform Resource Locator.
+- `URLConnection` (and `HttpURLConnection`) allows reading from and writing to a URL.
+- Can set request properties, handle redirects, timeouts.
+- Since Java 11, `HttpClient` provides a more modern API for HTTP/1.1 and HTTP/2, with asynchronous support.
+- `HttpClient` supports synchronous and asynchronous requests, WebSocket.
+
+### REST clients
+- REST (Representational State Transfer) is an architectural style for web services.
+- Java REST clients: `HttpClient`, Jersey Client, Apache HttpClient, Spring RestTemplate (now WebClient).
+- `HttpClient` (Java 11) is recommended for new projects.
+- REST clients interact with REST APIs using HTTP methods, JSON/XML payloads.
+- Serialization often handled by libraries like Jackson or Gson.
+
+## Advanced Java Language Features
+
+### Inner classes
+- Inner classes are non-static nested classes defined within another class.
+- They have access to all members (including private) of the outer class.
+- Each inner class instance is associated with an outer class instance.
+- Used for logically grouping classes that are used in only one place, increasing encapsulation.
+- Types: member inner class, local inner class (inside method), anonymous inner class.
+
+### Anonymous classes
+- Anonymous classes are inner classes without a name, declared and instantiated in a single expression.
+- They are useful for implementing interfaces or extending classes on the spot (e.g., event handlers).
+- Syntax: `new Interface() { ... }` or `new Class() { ... }`.
+- Can capture effectively final variables from enclosing scope.
+- Since Java 8, often replaced by lambda expressions for functional interfaces.
+
+### Nested classes
+- Nested classes are classes defined within another class, either static (static nested) or non-static (inner).
+- Static nested classes behave like top-level classes but are nested for packaging convenience.
+- They cannot access instance members of outer class directly (only via object reference).
+- Static nested classes are often used as helpers or builders.
+
+### Var keyword (local variable type inference)
+- `var` (Java 10+) allows local variable type inference; the compiler infers type from initializer.
+- Can be used in local variables, for-loop indices, and try-with-resources (Java 11).
+- Not allowed for fields, method parameters, or return types.
+- Improves readability by reducing boilerplate, but overuse can obscure type.
+- Type is inferred at compile time, not runtime; `var` is not a dynamic type.
+
+### Switch expressions (Java 12+)
+- Switch expressions extend switch statement to return a value and have new syntax.
+- Arrow syntax: `case X -> result;` (no fall-through).
+- Use `yield` to return value from a block.
+- Switch expressions are exhaustive (cover all cases) for enums and sealed types.
+- They improve code conciseness and reduce bugs from missing break.
+
+### Pattern matching (Java 14+ preview, 16+ standard)
+- Pattern matching for `instanceof` allows variable declaration and casting in one step.
+- Example: `if (obj instanceof String s) { System.out.println(s.length()); }`
+- Pattern matching for switch (preview in later versions) allows patterns in case labels.
+- Reduces boilerplate and improves safety.
+- Evolving feature with more patterns (deconstruction) in future.
+
+### Sealed classes (Java 15+ preview, 17+ standard)
+- Sealed classes restrict which classes or interfaces may extend/implement them.
+- Declared with `sealed` modifier, then `permits` clause listing permitted subclasses.
+- Permitted subclasses must be `final`, `sealed`, or `non-sealed`.
+- Enable exhaustive pattern matching and better domain modeling.
+- Enhance encapsulation by controlling inheritance.
+
+### Modules (Java 9+)
+- Java Platform Module System (JPMS) introduces modules for better encapsulation and reliable configuration.
+- Module descriptor `module-info.java` specifies module name, exports packages, requires other modules.
+- Modules help in creating maintainable and scalable applications.
+- Strong encapsulation: public types are not accessible unless package is exported.
+- Enables reliable configuration and reduced footprint.
+
+## JDBC
+
+### JDBC architecture
+- JDBC (Java Database Connectivity) is an API for connecting and executing queries on databases.
+- Consists of interfaces (Driver, Connection, Statement, ResultSet) implemented by database-specific drivers.
+- Two-tier architecture: Java app directly talks to DB via driver.
+- Three-tier: app server in between (e.g., using connection pooling).
+- JDBC provides both high-level and low-level access.
+
+### Drivers
+- JDBC drivers are implementations of JDBC interfaces for specific databases.
+- Four types: Type 1 (JDBC-ODBC bridge, deprecated), Type 2 (native API, partially Java), Type 3 (network protocol), Type 4 (pure Java, thin driver).
+- Type 4 drivers are most common (e.g., MySQL Connector/J, PostgreSQL JDBC).
+- DriverManager loads drivers and manages connections.
+- Also DataSource for connection pooling.
+
+### Connections
+- Connection represents a session with the database; obtained via `DriverManager.getConnection()` or `DataSource`.
+- Connection properties: URL, username, password.
+- Connection can set auto-commit mode, transaction isolation, etc.
+- Must be closed after use (try-with-resources).
+- Connection pooling reuses connections to improve performance.
+
+### Statements
+- Statement: used to execute static SQL queries (no parameters). Vulnerable to SQL injection.
+- PreparedStatement: precompiled SQL with placeholders (parameters), preventing SQL injection and improving performance for repeated queries.
+- CallableStatement: for stored procedures.
+- Execute methods: `executeQuery()` for SELECT, `executeUpdate()` for INSERT/UPDATE/DELETE, `execute()` for any.
+
+### Prepared statements
+- PreparedStatement extends Statement, allows parameterized SQL with `?` placeholders.
+- Parameters set using setXxx methods (e.g., `setString(1, value)`).
+- Benefits: performance (precompiled), security (escapes input), readability.
+- Important for preventing SQL injection attacks.
+- Can be reused with different parameter values.
+
+### ResultSet handling
+- ResultSet represents the result of a query; cursor initially before first row.
+- `next()` advances cursor, returns false when no more rows.
+- Retrieve column values with getXxx methods (by index or column name).
+- Types: forward-only, scrollable, updatable; concurrency: read-only, updatable.
+- Must close ResultSet when done (usually automatically when Statement closed).
+
+### Transactions
+- Transactions ensure ACID properties (Atomicity, Consistency, Isolation, Durability).
+- By default, each SQL statement is auto-committed.
+- To group multiple statements, disable auto-commit: `connection.setAutoCommit(false)`.
+- Commit: `connection.commit()`, rollback: `connection.rollback()`.
+- Savepoints allow partial rollback.
+
+### Batch processing
+- Batch processing sends multiple SQL statements in one database round-trip for performance.
+- Statement: `addBatch()`, `executeBatch()`.
+- PreparedStatement can batch multiple parameter sets.
+- Returns array of update counts.
+- Useful for bulk inserts/updates.
+
+### Connection pooling
+- Connection pooling manages a pool of database connections for reuse, reducing overhead of creating connections.
+- Implemented by DataSource (e.g., HikariCP, Apache DBCP, c3p0).
+- Application borrows connection from pool, returns it after use.
+- Improves scalability and response time.
+- Configure pool size based on workload.
+
+## Performance & Optimization
+
+### Profiling Java apps
+- Profiling tools (JProfiler, VisualVM, YourKit, Java Flight Recorder) help identify performance bottlenecks.
+- CPU profiling shows hot methods; memory profiling reveals leaks and allocation patterns.
+- Thread profiling detects contention and deadlocks.
+- Use profiling during development and under realistic load.
+- Focus on optimizing hot spots, not premature optimization.
+
+### Memory tuning
+- Tune heap sizes: `-Xms`, `-Xmx` to avoid frequent GC and OutOfMemoryError.
+- Adjust young generation size (`-XX:NewRatio`, `-Xmn`) based on application object allocation patterns.
+- Set appropriate Metaspace size.
+- Monitor heap usage with tools; look for memory leaks.
+- Use `-XX:+HeapDumpOnOutOfMemoryError` to capture dumps.
+
+### GC tuning
+- Goal: minimize GC overhead while meeting pause time requirements.
+- Choose GC algorithm based on application needs: G1 for balanced, Parallel for throughput, ZGC for low-latency.
+- Tune parameters like `-XX:MaxGCPauseMillis` for G1, `-XX:G1HeapRegionSize`.
+- Monitor GC logs with tools (GCViewer, gceasy) to understand behavior.
+- Aim for high throughput and low pauses.
+
+### Thread tuning
+- Thread pool sizing: number of threads depends on CPU cores and I/O vs CPU-bound tasks.
+- For CPU-bound, pool size around number of cores; for I/O-bound, can be larger.
+- Use `ThreadPoolExecutor` with bounded queues to prevent resource exhaustion.
+- Monitor thread usage, stack traces, and deadlocks.
+- Avoid excessive context switching.
+
+### CPU optimization
+- Identify CPU-intensive operations: algorithms, loops, object creation.
+- Optimize code: use efficient data structures, avoid unnecessary boxing, reduce method calls.
+- Use parallel streams or Fork/Join for parallelizable CPU tasks.
+- JIT optimizations like inlining can help, but code clarity matters.
+- Profiling guides where to focus.
+
+### I/O optimization
+- I/O operations (disk, network) are often bottlenecks.
+- Use buffering (BufferedInputStream, BufferedWriter) to reduce system calls.
+- For file I/O, consider memory-mapped files or NIO for large files.
+- For network, use non-blocking I/O (NIO) or asynchronous I/O.
+- Connection pooling for databases and HTTP clients.
+
+## Security
+
+### Java security model
+- Java provides a comprehensive security model: bytecode verification, class loaders, security manager, access control, cryptography.
+- Sandboxing: untrusted code runs in restricted environment.
+- Security manager enforces permissions (file, network, reflection) based on policy.
+- Since Java 17, Security Manager is deprecated for removal, but still used in legacy apps.
+- Modern security relies on module system and encapsulation.
+
+### Cryptography basics
+- Java Cryptography Architecture (JCA) provides APIs for encryption, decryption, hashing, digital signatures.
+- Key classes: `Cipher`, `KeyGenerator`, `SecretKey`, `MessageDigest`, `Signature`.
+- Supports algorithms: AES, RSA, SHA, HMAC.
+- Use `SecureRandom` for cryptographically strong random numbers.
+- Java Cryptography Extension (JCE) provides unlimited strength jurisdiction policy files (now bundled).
+
+### SSL/TLS
+- SSL/TLS provides secure communication over networks.
+- Java supports SSL/TLS via `javax.net.ssl` package: `SSLSocket`, `SSLServerSocket`, `HttpsURLConnection`.
+- Key management: keystores (private keys) and truststores (trusted certificates).
+- `SSLContext` can be configured with specific protocols and cipher suites.
+- In Java, default TLS version can be set; ensure weak protocols disabled.
+
+### Secure coding practices
+- Validate input to prevent injection attacks (SQL, command, XSS).
+- Use prepared statements for SQL queries.
+- Avoid exposing sensitive data (passwords, tokens) in logs or exceptions.
+- Use proper access control: least privilege principle.
+- Keep libraries updated to avoid known vulnerabilities.
+- Use static analysis tools (FindBugs, SonarQube) to detect security flaws.
+
+### Authentication & authorization
+- Authentication verifies identity (who you are); authorization determines access rights (what you can do).
+- Java EE/Spring Security provides frameworks for authentication/authorization.
+- JAAS (Java Authentication and Authorization Service) is a pluggable authentication module.
+- Use secure password storage (hashing with salt, bcrypt).
+- Implement role-based access control (RBAC) or OAuth2 for APIs.
