@@ -886,7 +886,6 @@ Here are detailed, senior-level notes for each topic and subtopic. These notes a
     - **Product Mindset:** The platform itself is treated as a product, with a dedicated team that treats internal developers as its customers, focusing on usability, documentation, and continuous improvement.
 
 # Assorted Patterns
-# Assorted Patterns - Senior Developer Interview Notes
 
 ## Abstract Document
 - **Definition**: A structural design pattern that allows handling of non-typed properties in a flexible way, using a key-value store and dynamic accessors.
