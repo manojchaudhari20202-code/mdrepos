@@ -29,3 +29,5 @@ https://www.youtube.com/watch?v=5KIbhHo6GJA
   https://www.youtube.com/@drgracelee
 - Enterprise Architecture Radio
   https://www.youtube.com/@enterprisearchitectureradio
+- Coding
+  https://www.youtube.com/@BroCodez
