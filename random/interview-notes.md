@@ -1,4 +1,6 @@
-## Microservices & Service-Oriented Architecture Fundamentals
+# Microservices
+
+###  Microservices & Service-Oriented Architecture Fundamentals
 - **Microservices vs SOA concepts**: SOA = enterprise‑wide service reuse, often with ESB; microservices = fine‑grained, decentralized, independently deployable services.
 - **Evolution of distributed architectures**: Monolith → SOA → microservices → serverless; driven by scalability, agility, cloud‑native.
 - **Service boundaries**: Defined by business capabilities / subdomains; aligned with DDD bounded contexts.
@@ -24,7 +26,7 @@
 - **Backward compatibility**: New service versions must support old clients; avoid breaking changes.
 - **Contract‑first design**: Define API contracts before implementation; ensures consistency and parallel development.
 
-## Advanced Microservices & SOA
+###  Advanced Microservices & SOA
 - **Distributed system design**: Design for failure, network latency, partial failures; use retries, circuit breakers.
 - **Data consistency models**: Strong vs eventual consistency; choose based on business requirements.
 - **CAP theorem in microservices**: Trade‑off between Consistency, Availability, Partition tolerance; microservices often choose AP or CP per use case.
@@ -47,7 +49,7 @@
 - **Canary releases**: Gradually roll out new version to a subset of users.
 - **Feature flags in microservices**: Toggle features on/off without deployment; enable gradual rollout and A/B testing.
 
-## Performance in Microservices & SOA
+###  Performance in Microservices & SOA
 - **Latency in distributed systems**: Network calls add latency; minimize chattiness, optimize serialization.
 - **Network overhead optimization**: Use efficient protocols (gRPC, HTTP/2), compression, persistent connections.
 - **Service‑to‑service performance**: Monitor and optimize response times; use caching where appropriate.
@@ -66,7 +68,7 @@
 - **Throughput optimization**: Maximize requests per second; tune thread pools, async processing, DB queries.
 - **Tail latency reduction**: Focus on high percentiles (p99); use hedging requests, request collapsing.
 
-## Instrumentation in Microservices & SOA
+###  Instrumentation in Microservices & SOA
 - **Runtime instrumentation**: Embed agents/libraries to collect metrics, traces, logs at runtime.
 - **Service instrumentation libraries**: SDKs for metrics (Prometheus), tracing (OpenTelemetry), logging (structured loggers).
 - **Metrics collection**: Gather quantitative data (request rates, error rates, latency) from services.
@@ -80,7 +82,7 @@
 - **Service hooks and interceptors**: Middleware that intercepts requests/responses to add instrumentation.
 - **Monitoring agents**: Lightweight sidecars or daemons that collect and export telemetry.
 
-## Observability in Microservices & SOA
+###  Observability in Microservices & SOA
 - **Observability principles**: Understand internal state from external outputs; based on metrics, logs, traces.
 - **Structured logging**: Logs in machine‑readable format (JSON) with fields for querying.
 - **Correlation IDs**: Unique identifier passed across service calls to correlate logs and traces.
@@ -96,7 +98,7 @@
 - **Production debugging**: Techniques like debuggers, log inspection, profiling in production.
 - **Dependency mapping**: Discover and visualize service dependencies; understand impact of failures.
 
-## Microservices & SOA Architectures
+###  Microservices & SOA Architectures
 - **Monolith to microservices migration**: Incremental strangler pattern; identify service boundaries.
 - **Layered microservices architecture**: Services organized in layers (presentation, business, data) but distributed.
 - **Event‑driven architecture**: Services communicate via events; decoupled and scalable.
@@ -113,7 +115,7 @@
 - **Hybrid architecture**: Mix of on‑prem and cloud; requires integration and consistent management.
 - **Resilient architecture**: Design for failure; use redundancy, retries, circuit breakers, bulkheads.
 
-## Microservices & SOA Patterns
+###  Microservices & SOA Patterns
 - **API gateway pattern**: Single entry point for clients; handles cross‑cutting concerns.
 - **Sidecar pattern**: Deploy helper container alongside service for offloaded tasks (logging, proxy).
 - **Circuit breaker**: Prevents cascading failures by opening circuit when failures threshold reached.
@@ -131,7 +133,7 @@
 - **Cache‑aside**: Load data into cache on read; update cache on write.
 - **Backpressure pattern**: Downstream service signals load to upstream to slow down.
 
-## Microservices & SOA Anti‑Patterns
+###  Microservices & SOA Anti‑Patterns
 - **Distributed monolith**: Services deployed separately but tightly coupled, requiring coordinated changes.
 - **Shared database**: Multiple services share the same database, leading to coupling and data ownership issues.
 - **Tight coupling**: Services depend on internal details of others; changes ripple.
@@ -148,7 +150,7 @@
 - **Cascade failures**: Failure propagates through system due to lack of resilience.
 - **Hidden shared state**: Services unintentionally share state via caches or databases; leads to coupling.
 
-## Microservices & SOA Best Practices
+###  Microservices & SOA Best Practices
 - **Domain‑driven service design**: Align services with business domains and subdomains.
 - **Contract‑first APIs**: Define API contracts upfront; use OpenAPI, gRPC proto.
 - **Independent data ownership**: Each service owns its data; no shared databases.
@@ -168,7 +170,7 @@
 - **Cost optimization**: Monitor and optimize resource usage; use spot instances, autoscaling.
 - **Performance budgeting**: Set limits on latency, resource consumption; monitor against budgets.
 
-## Microservices & SOA Technologies
+###  Microservices & SOA Technologies
 - **Container platforms**: Docker, container runtimes.
 - **Kubernetes ecosystem**: Orchestration, service discovery, scaling, rolling updates.
 - **Service mesh tools**: Istio, Linkerd, Consul Connect for traffic management, security, observability.
