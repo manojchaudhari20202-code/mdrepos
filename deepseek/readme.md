@@ -15,12 +15,17 @@
 - [Javascript](javascript.md)
 - [Typescript](typescript.md)
 - [Patterns Assorted](patternsAssorted.md)
-- [Arcitura Patterns](arcituraPatterns.md)
 - [Microservices](microservices.md)
 - [Data Management](dataManagement.md)
 - [System Design](dataManagement.md)
 ---
-
+- [Arcitura Patterns](arcituraPatterns.md)
+- [Arcitura DevOps](arcituraDevOps.md)
+- [Arcitura SOA](arcituraSOA.md)
+- [Arcitura BigData](arcituraBigData.md)
+- [Arcitura Cloud](arcituraCloud.md)
+- [Arcitura Microservices](arcituraMicroservices.md)
+---
 <!--
 
 - [Engineering Excellence](dataManagement.md)
