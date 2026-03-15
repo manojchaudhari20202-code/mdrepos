@@ -2,15 +2,15 @@
 
 ---
 - [Java](java.md) ✔
-- [Python](python.md) ✔
-- [React](react.md)
+- [Java Programs](javaPrograms.md) ✔
+- [Java DSA](javaDSA.md) ✔
+---
 - [Oracle](oracle.md) 
 - [Spring](spring.md)
+- [React](react.md)
 - [Kafka](kafka.md) ✔
+- [Python](python.md) ✔
 - [Spark](spark.md)
----
-- [Java Programs](javaPrograms.md)
-- [Python Programs](pythonPrograms.md)
 ---
 - [Principles](principlesAssorted.md) ✔
 - [Patterns](patterns.md)
