@@ -9,6 +9,9 @@
 - [Kafka](kafka.md) ✔
 - [Spark](spark.md)
 ---
+- [Java Programs](javaPrograms.md)
+- [Python Programs](pythonPrograms.md)
+---
 - [Principles](principlesAssorted.md) ✔
 - [Patterns](patterns.md)
 ---
