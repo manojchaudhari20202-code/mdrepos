@@ -17,11 +17,11 @@
 - [Arcitura SOA](arcituraSOA.md) ✔
 - [Arcitura BigData](arcituraBigData.md) ✔
 - [Arcitura Cloud](arcituraCloud.md) ✔
-- [Arcitura Microservices](arcituraMicroservices.md)
+- [Arcitura Microservices](arcituraMicroservices.md) ✔
 ---
 - [Javascript](javascript.md)
 - [Typescript](typescript.md)
-- [Patterns Assorted](patternsAssorted.md)
+- [Patterns Assorted](patternsAssorted.md) ✔
 - [Microservices](microservices.md) ✔
 - [Data Management](dataManagement.md) ✔
 - [System Design](dataManagement.md)
