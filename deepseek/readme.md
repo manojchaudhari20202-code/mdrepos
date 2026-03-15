@@ -1,16 +1,16 @@
 ### Interview Notes
----
-- [Principles](principlesAssorted.md)
-- [Patterns](patterns.md)
+
 ---
 - [Java](java.md)
 - [Python](python.md)
 - [React](react.md)
----
 - [Oracle](oracle.md)
 - [Spring](spring.md)
 - [Kafka](kafka.md)
 - [Spark](spark.md)
+---
+- [Principles](principlesAssorted.md)
+- [Patterns](patterns.md)
 ---
 - [Arcitura Patterns](arcituraPatterns.md)
 - [Arcitura DevOps](arcituraDevOps.md)
