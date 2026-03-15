@@ -5,3 +5,4 @@
 - [Patterns Assorted](patternsAssorted.md)
 - [Arcitura Patterns](arcituraPatterns.md)
 - [Data Management](dataManagement.md)
+
