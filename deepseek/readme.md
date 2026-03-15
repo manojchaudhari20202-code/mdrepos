@@ -1,56 +1,56 @@
 ### Interview Notes
 
 ---
-- [Java](java.md) ✔
-- [Java Programs](javaPrograms.md) ✔
-- [Java DSA](javaDSA.md) ✔
+- [Java](notes/java.md) ✔
+- [Java Programs](notes/javaPrograms.md) ✔
+- [Java DSA](notes/javaDSA.md) ✔
 ---
-- [Oracle](oracle.md) 
-- [Spring](spring.md)
-- [React](react.md)
-- [Kafka](kafka.md) ✔
-- [Python](python.md) ✔
-- [Spark](spark.md)
+- [Oracle](notes/oracle.md) 
+- [Spring](notes/spring.md)
+- [React](notes/react.md)
+- [Kafka](notes/kafka.md) ✔
+- [Python](notes/python.md) ✔
+- [Spark](notes/spark.md)
 ---
-- [Principles](principlesAssorted.md) ✔
-- [Patterns](patterns.md)
+- [Principles](notes/principlesAssorted.md) ✔
+- [Patterns](notes/patterns.md)
 ---
-- [Arcitura Patterns](arcituraPatterns.md) ✔
-- [Arcitura DevOps](arcituraDevOps.md) 
-- [Arcitura SOA](arcituraSOA.md) ✔
-- [Arcitura BigData](arcituraBigData.md) ✔
-- [Arcitura Cloud](arcituraCloud.md) ✔
-- [Arcitura Microservices](arcituraMicroservices.md) ✔
+- [Arcitura Patterns](notes/arcituraPatterns.md) ✔
+- [Arcitura DevOps](notes/arcituraDevOps.md) 
+- [Arcitura SOA](notes/arcituraSOA.md) ✔
+- [Arcitura BigData](notes/arcituraBigData.md) ✔
+- [Arcitura Cloud](notes/arcituraCloud.md) ✔
+- [Arcitura Microservices](notes/arcituraMicroservices.md) ✔
 ---
-- [Javascript](javascript.md)
-- [Typescript](typescript.md)
-- [Cloud](javascript.md)
-- [Cloud](javascript.md)
-- [AWS](javascript.md)
-- [Azure](javascript.md)
-- [GCP](javascript.md)
-- [Patterns Assorted](patternsAssorted.md) ✔
-- [Microservices](microservices.md) ✔
-- [Data Management](dataManagement.md) ✔
-- [System Design](dataManagement.md)
+- [Javascript](notes/javascript.md)
+- [Typescript](notes/typescript.md)
+- [Cloud](notes/javascript.md)
+- [Cloud](notes/javascript.md)
+- [AWS](notes/javascript.md)
+- [Azure](notes/javascript.md)
+- [GCP](notes/javascript.md)
+- [Patterns Assorted](notes/patternsAssorted.md) ✔
+- [Microservices](notes/microservices.md) ✔
+- [Data Management](notes/dataManagement.md) ✔
+- [System Design](notes/dataManagement.md)
 ---
 <!--
 
-- [Engineering Excellence](dataManagement.md)
-- [Product Excellence](dataManagement.md)
-- [Process Excellence](dataManagement.md)
-- [Leadership and Strategic Excellence](dataManagement.md)
-- [Business Excellence](dataManagement.md)
-- [Design Excellence](dataManagement.md)
-- [Execution Excellence](dataManagement.md)
-- [Delivery Excellence](dataManagement.md)
-- [Personal Excellence](dataManagement.md)
-- [Operational Excellence](dataManagement.md)
-- [Architectural Excellence](dataManagement.md)
-- [Data Management Excellence](dataManagement.md)
-- [Big Data Excellence](dataManagement.md)
-- [Cloud Excellence](cloudExcellence.md)
-- [Testing Excellence](dataManagement.md)
+- [Engineering Excellence](notes/dataManagement.md)
+- [Product Excellence](notes/dataManagement.md)
+- [Process Excellence](notes/dataManagement.md)
+- [Leadership and Strategic Excellence](notes/dataManagement.md)
+- [Business Excellence](notes/dataManagement.md)
+- [Design Excellence](notes/dataManagement.md)
+- [Execution Excellence](notes/dataManagement.md)
+- [Delivery Excellence](notes/dataManagement.md)
+- [Personal Excellence](notes/dataManagement.md)
+- [Operational Excellence](notes/dataManagement.md)
+- [Architectural Excellence](notes/dataManagement.md)
+- [Data Management Excellence](notes/dataManagement.md)
+- [Big Data Excellence](notes/dataManagement.md)
+- [Cloud Excellence](notes/cloudExcellence.md)
+- [Testing Excellence](notes/dataManagement.md)
 ---
 
 -->
