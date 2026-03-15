@@ -21,6 +21,11 @@
 ---
 - [Javascript](javascript.md)
 - [Typescript](typescript.md)
+- [Cloud](javascript.md)
+- [Cloud](javascript.md)
+- [AWS](javascript.md)
+- [Azure](javascript.md)
+- [GCP](javascript.md)
 - [Patterns Assorted](patternsAssorted.md) ✔
 - [Microservices](microservices.md) ✔
 - [Data Management](dataManagement.md) ✔
